@@ -82,7 +82,7 @@
 
                 <!-- 雲端與金鑰設定按鈕 -->
                 <button onclick="openSyncModal()" class="flex items-center space-x-1 px-2.5 py-1.5 rounded-full bg-indigo-50 hover:bg-indigo-100 text-indigo-700 text-xs font-semibold border border-indigo-100 transition-all">
-                    <i class="fa-solid fa-cloud-sun"></i>
+                    <i class="fa-solid fa-cloud"></i>
                     <span id="sync-status" class="hidden xs:inline">雲端與金鑰設定</span>
                 </button>
             </div>
@@ -166,10 +166,16 @@
                 </div>
             </div>
 
-            <!-- AI 辨識中進度條 -->
             <div id="analyzing-state" class="hidden bg-white rounded-3xl p-8 shadow-sm border border-slate-200/80 flex flex-col items-center justify-center py-12 text-center animate-pulse">
                 <div class="relative w-20 h-20 mb-4 flex items-center justify-center">
                     <div class="absolute inset-0 border-4 border-indigo-100 rounded-full"></div>
+                    <div class="absolute inset-0 border-4 border-t-indigo-600 rounded-full animate-spin"></div>
+                    <i class="fa-solid fa-brain text-2xl text-indigo-600"></i>
+                </div>
+                <h3 class="text-lg font-bold text-slate-800 mb-1">Gemini AI 正在智能解析照片...</h3>
+                <p class="text-sm text-slate-400 max-w-xs">我們正在抓取照片中的收縮壓、舒張壓及心跳率，這大約需要 2-4 秒</p>
+            </div>
+
             <!-- 辨識結果二次核對卡片 -->
             <div id="result-card" class="hidden bg-white rounded-3xl p-6 shadow-md border border-indigo-100">
                 <div class="flex items-center space-x-3 border-b border-slate-100 pb-4 mb-5">
@@ -209,7 +215,7 @@
                     </div>
                 </div>
 
-                <!-- 新增：自定義備註輸入欄位，防堵 AI 冗長文字污染日誌 -->
+                <!-- 自定義備註輸入欄位 -->
                 <div class="mb-5">
                     <label class="block text-xs font-bold text-slate-500 mb-1.5">備註 / 狀態說明 (選填)</label>
                     <input type="text" id="ocr-custom-notes" class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 outline-none text-xs font-medium transition-all" placeholder="例如：剛起床、睡前、服藥後（留空則預設為「AI拍照」）">
@@ -469,7 +475,7 @@
             </div>
 
             <div class="space-y-4">
-                <!-- Google Gemini API 金鑰輸入區 (最重要修改) -->
+                <!-- Google Gemini API 金鑰輸入區 -->
                 <div class="bg-indigo-50/50 p-4 rounded-2xl border border-indigo-100 space-y-2">
                     <label class="block text-xs font-bold text-indigo-900 flex items-center gap-1">
                         <i class="fa-solid fa-key text-indigo-600"></i>
@@ -624,10 +630,11 @@
                 localStorage.setItem('bp_current_member', window.currentMember);
             }
 
-            // 回填本地保存的金鑰
+            // 安全回填金鑰，防止 Null 指標異常
             const savedApiKey = localStorage.getItem('gemini_api_key');
-            if (savedApiKey) {
-                document.getElementById('gemini-api-key').value = savedApiKey;
+            const keyInput = document.getElementById('gemini-api-key');
+            if (savedApiKey && keyInput) {
+                keyInput.value = savedApiKey;
             }
 
             updateMemberSelectorUI();
@@ -638,15 +645,23 @@
 
             const now = new Date();
             now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
-            document.getElementById('manual-time').value = now.toISOString().slice(0, 16);
+            const manualTimeInput = document.getElementById('manual-time');
+            if (manualTimeInput) {
+                manualTimeInput.value = now.toISOString().slice(0, 16);
+            }
             
-            // 預設若沒有 HTTPS 與 Firebase API 時的本機文字提示
-            document.getElementById('sync-status').innerText = "📴 離線 / 待配置金鑰";
+            // 預設提示
+            const syncStatusEl = document.getElementById('sync-status');
+            if (syncStatusEl) {
+                syncStatusEl.innerText = "📴 離線 / 待配置金鑰";
+            }
         });
 
         // 保存自定義 API 金鑰函數
         function saveGeminiApiKey() {
-            const key = document.getElementById('gemini-api-key').value.trim();
+            const keyInput = document.getElementById('gemini-api-key');
+            if (!keyInput) return;
+            const key = keyInput.value.trim();
             if (!key) {
                 showToast("請輸入以 AIzaSy 開頭的 API 金鑰！", "fa-triangle-exclamation", "text-amber-500");
                 return;
@@ -663,10 +678,15 @@
                 el.classList.add('text-slate-600', 'hover:bg-slate-50');
             });
 
-            document.getElementById(tabId).classList.remove('hidden');
+            const targetContent = document.getElementById(tabId);
+            if (targetContent) {
+                targetContent.classList.remove('hidden');
+            }
             const targetBtn = document.getElementById(`btn-${tabId}`);
-            targetBtn.classList.remove('text-slate-600', 'hover:bg-slate-50');
-            targetBtn.classList.add('bg-indigo-600', 'text-white', 'shadow-sm');
+            if (targetBtn) {
+                targetBtn.classList.remove('text-slate-600', 'hover:bg-slate-50');
+                targetBtn.classList.add('bg-indigo-600', 'text-white', 'shadow-sm');
+            }
 
             window.activeTab = tabId;
 
@@ -685,15 +705,19 @@
         }
 
         function updateMemberSelectorUI() {
-            document.getElementById('display-member-name').innerText = window.currentMember;
+            const badge = document.getElementById('display-member-name');
+            if (badge) {
+                badge.innerText = window.currentMember;
+            }
             const listContainer = document.getElementById('member-list-items');
+            if (!listContainer) return;
             listContainer.innerHTML = '';
             
             window.membersList.forEach(member => {
                 const isActive = member === window.currentMember;
                 const activeClass = isActive ? 'bg-indigo-50 font-bold text-indigo-700' : 'text-slate-600 hover:bg-slate-50';
                 const checkIcon = isActive ? '<i class="fa-solid fa-circle-check text-indigo-600 text-[10px] ml-auto"></i>' : '';
-                const deleteButton = member !== '主成員(開銷)' && member !== '主成員(我)'
+                const deleteButton = member !== '主成員(我)'
                     ? `<button onclick="deleteMemberProfile(event, '${member}')" class="text-slate-300 hover:text-rose-500 p-1 rounded-md ml-2 transition-all hover:scale-110" title="刪除此成員所有記錄">
                          <i class="fa-solid fa-trash-can text-[10px]"></i>
                        </button>` 
@@ -715,7 +739,7 @@
 
         function toggleMemberDropdown() {
             const dropdown = document.getElementById('member-dropdown');
-            dropdown.classList.toggle('hidden');
+            if (dropdown) dropdown.classList.toggle('hidden');
         }
 
         window.addEventListener('click', (e) => {
@@ -727,18 +751,25 @@
         });
 
         function openAddMemberModal() {
-            document.getElementById('member-dropdown').classList.add('hidden');
-            document.getElementById('member-modal').classList.remove('hidden');
-            document.getElementById('new-member-name').value = '';
-            document.getElementById('new-member-name').focus();
+            const dropdown = document.getElementById('member-dropdown');
+            if (dropdown) dropdown.classList.add('hidden');
+            const modal = document.getElementById('member-modal');
+            if (modal) modal.classList.remove('hidden');
+            const newMemberNameInput = document.getElementById('new-member-name');
+            if (newMemberNameInput) {
+                newMemberNameInput.value = '';
+                newMemberNameInput.focus();
+            }
         }
 
         function closeAddMemberModal() {
-            document.getElementById('member-modal').classList.add('hidden');
+            const modal = document.getElementById('member-modal');
+            if (modal) modal.classList.add('hidden');
         }
 
         function submitNewMember() {
             const nameInput = document.getElementById('new-member-name');
+            if (!nameInput) return;
             const name = nameInput.value.trim();
             if (!name) {
                 showToast("請輸入成員名稱！", "fa-triangle-exclamation", "text-amber-500");
@@ -763,7 +794,8 @@
         function switchMember(name) {
             window.currentMember = name;
             localStorage.setItem('bp_current_member', window.currentMember);
-            document.getElementById('member-dropdown').classList.add('hidden');
+            const dropdown = document.getElementById('member-dropdown');
+            if (dropdown) dropdown.classList.add('hidden');
             
             updateMemberSelectorUI();
             updateStats();
@@ -814,18 +846,21 @@
         // 自定義通用確定面板
         function showCustomConfirm(title, desc, isDanger = true, onConfirm) {
             const confirmModal = document.getElementById('confirm-modal');
+            if (!confirmModal) return;
             const icon = document.getElementById('confirm-modal-icon');
             const okBtn = document.getElementById('confirm-modal-ok');
+            const titleEl = document.getElementById('confirm-modal-title');
+            const descEl = document.getElementById('confirm-modal-desc');
 
-            document.getElementById('confirm-modal-title').innerText = title;
-            document.getElementById('confirm-modal-desc').innerText = desc;
+            if (titleEl) titleEl.innerText = title;
+            if (descEl) descEl.innerText = desc;
 
             if (isDanger) {
-                icon.className = "fa-solid fa-triangle-exclamation text-rose-600";
-                okBtn.className = "flex-1 py-2.5 bg-rose-600 hover:bg-rose-700 text-white font-semibold rounded-xl text-xs transition-all";
+                if (icon) icon.className = "fa-solid fa-triangle-exclamation text-rose-600";
+                if (okBtn) okBtn.className = "flex-1 py-2.5 bg-rose-600 hover:bg-rose-700 text-white font-semibold rounded-xl text-xs transition-all";
             } else {
-                icon.className = "fa-solid fa-circle-question text-indigo-600";
-                okBtn.className = "flex-1 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold rounded-xl text-xs transition-all";
+                if (icon) icon.className = "fa-solid fa-circle-question text-indigo-600";
+                if (okBtn) okBtn.className = "flex-1 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold rounded-xl text-xs transition-all";
             }
 
             window.confirmModalCallback = onConfirm;
@@ -833,25 +868,33 @@
         }
 
         function closeConfirmModal() {
-            document.getElementById('confirm-modal').classList.add('hidden');
+            const confirmModal = document.getElementById('confirm-modal');
+            if (confirmModal) confirmModal.classList.add('hidden');
             window.confirmModalCallback = null;
         }
 
-        document.getElementById('confirm-modal-cancel').addEventListener('click', closeConfirmModal);
-        document.getElementById('confirm-modal-ok').addEventListener('click', () => {
-            if (window.confirmModalCallback) {
-                window.confirmModalCallback();
-            }
-            closeConfirmModal();
-        });
+        const cancelBtn = document.getElementById('confirm-modal-cancel');
+        if (cancelBtn) cancelBtn.addEventListener('click', closeConfirmModal);
+
+        const okBtn = document.getElementById('confirm-modal-ok');
+        if (okBtn) {
+            okBtn.addEventListener('click', () => {
+                if (window.confirmModalCallback) {
+                    window.confirmModalCallback();
+                }
+                closeConfirmModal();
+            });
+        }
 
         // 拖曳與相簿點選
         function setupDragAndDrop() {
             const dropZone = document.getElementById('drop-zone');
             const fileInput = document.getElementById('file-input');
+            if (!dropZone || !fileInput) return;
 
             dropZone.addEventListener('click', () => {
-                if (document.getElementById('preview-container').classList.contains('hidden')) {
+                const previewContainer = document.getElementById('preview-container');
+                if (previewContainer && previewContainer.classList.contains('hidden')) {
                     fileInput.click();
                 }
             });
@@ -881,7 +924,8 @@
         }
 
         function triggerFileInput() {
-            document.getElementById('file-input').click();
+            const fileInput = document.getElementById('file-input');
+            if (fileInput) fileInput.click();
         }
 
         function handleSelectedFile(file) {
@@ -903,20 +947,29 @@
             const previewContainer = document.getElementById('preview-container');
             const imagePreview = document.getElementById('image-preview');
 
-            uploadPrompt.classList.add('hidden');
-            previewContainer.classList.remove('hidden');
-            imagePreview.src = src;
+            if (uploadPrompt) uploadPrompt.classList.add('hidden');
+            if (previewContainer) previewContainer.classList.remove('hidden');
+            if (imagePreview) imagePreview.src = src;
         }
 
         function resetUpload(event) {
             if (event) event.stopPropagation();
-            document.getElementById('file-input').value = '';
-            document.getElementById('upload-prompt').classList.remove('hidden');
-            document.getElementById('preview-container').classList.add('hidden');
-            document.getElementById('image-preview').src = '';
-            document.getElementById('ocr-custom-notes').value = ''; // 清空先前輸入的自訂備註
-            document.getElementById('result-card').classList.add('hidden');
-            document.getElementById('analyzing-state').classList.add('hidden');
+            const fileInput = document.getElementById('file-input');
+            if (fileInput) fileInput.value = '';
+            
+            const uploadPrompt = document.getElementById('upload-prompt');
+            const previewContainer = document.getElementById('preview-container');
+            const imagePreview = document.getElementById('image-preview');
+            const notesInput = document.getElementById('ocr-custom-notes');
+            const resultCard = document.getElementById('result-card');
+            const analyzingState = document.getElementById('analyzing-state');
+
+            if (uploadPrompt) uploadPrompt.classList.remove('hidden');
+            if (previewContainer) previewContainer.classList.add('hidden');
+            if (imagePreview) imagePreview.src = '';
+            if (notesInput) notesInput.value = ''; 
+            if (resultCard) resultCard.classList.add('hidden');
+            if (analyzingState) analyzingState.classList.add('hidden');
         }
 
         async function startCameraStream() {
@@ -925,6 +978,8 @@
             const dropZone = document.getElementById('drop-zone');
             
             resetUpload();
+
+            if (!webcam || !cameraContainer || !dropZone) return;
 
             const constraintsList = [
                 { video: { facingMode: { ideal: "environment" }, width: { ideal: 1280 }, height: { ideal: 720 } } },
@@ -941,7 +996,8 @@
                     webcam.srcObject = window.stream;
                     cameraContainer.classList.remove('hidden');
                     dropZone.classList.add('hidden');
-                    document.getElementById('btn-toggle-camera').classList.add('bg-indigo-50', 'text-indigo-600');
+                    const toggleBtn = document.getElementById('btn-toggle-camera');
+                    if (toggleBtn) toggleBtn.classList.add('bg-indigo-50', 'text-indigo-600');
                     success = true;
                     showToast("鏡頭啟動成功！請對準血壓計畫面", "fa-video", "text-indigo-400");
                     break;
@@ -966,15 +1022,17 @@
                 window.stream.getTracks().forEach(track => track.stop());
                 window.stream = null;
             }
-            webcam.srcObject = null;
-            cameraContainer.classList.add('hidden');
-            dropZone.classList.remove('hidden');
-            document.getElementById('btn-toggle-camera').classList.remove('bg-indigo-50', 'text-indigo-600');
+            if (webcam) webcam.srcObject = null;
+            if (cameraContainer) cameraContainer.classList.add('hidden');
+            if (dropZone) dropZone.classList.remove('hidden');
+            
+            const toggleBtn = document.getElementById('btn-toggle-camera');
+            if (toggleBtn) toggleBtn.classList.remove('bg-indigo-50', 'text-indigo-600');
         }
 
-        // 強健快照快門，防止 mobile 讀取 videoWidth 異常
         function capturePhoto() {
             const webcam = document.getElementById('webcam');
+            if (!webcam) return;
             const canvas = document.createElement('canvas');
             
             let width = webcam.videoWidth;
@@ -1012,14 +1070,23 @@
                 return { name: "血壓偏高", style: "bg-amber-100 text-amber-800 border-amber-200", icon: "fa-circle-info" };
             }
             return { name: "正常血壓", style: "bg-emerald-100 text-emerald-800 border-emerald-200", icon: "fa-circle-check" };
+        }
+
         // 儲存 OCR 辨識調整結果
         async function saveOcrResult() {
-            const sys = parseInt(document.getElementById('ocr-systolic').value);
-            const dia = parseInt(document.getElementById('ocr-diastolic').value);
-            const pul = parseInt(document.getElementById('ocr-pulse').value);
+            const sysInput = document.getElementById('ocr-systolic');
+            const diaInput = document.getElementById('ocr-diastolic');
+            const pulInput = document.getElementById('ocr-pulse');
+            const customNotesInput = document.getElementById('ocr-custom-notes');
+
+            if (!sysInput || !diaInput || !pulInput) return;
+
+            const sys = parseInt(sysInput.value);
+            const dia = parseInt(diaInput.value);
+            const pul = parseInt(pulInput.value);
             
-            // 優先讀取用戶手動輸入的精簡備註，留空則優雅降級為 "AI拍照"
-            const customNote = document.getElementById('ocr-custom-notes').value.trim() || "AI拍照";
+            // 優先讀取用戶手動輸入的精簡備註，留空則預設為 "AI拍照"
+            const customNote = (customNotesInput ? customNotesInput.value.trim() : "") || "AI拍照";
 
             if (isNaN(sys) || isNaN(dia) || isNaN(pul)) {
                 showToast("數據不得為空，請填寫完整！", "fa-triangle-exclamation", "text-amber-500");
@@ -1034,7 +1101,7 @@
                 systolic: sys,
                 diastolic: dia,
                 pulse: pul,
-                notes: customNote, // 儲存清爽的自訂備註
+                notes: customNote, 
                 level: levelInfo.name,
                 member: window.currentMember
             };
@@ -1063,11 +1130,19 @@
         // 手動輸入保存
         async function saveManualInput(e) {
             e.preventDefault();
-            const datetime = document.getElementById('manual-time').value;
-            const sys = parseInt(document.getElementById('manual-systolic').value);
-            const dia = parseInt(document.getElementById('manual-diastolic').value);
-            const pul = parseInt(document.getElementById('manual-pulse').value);
-            const notes = document.getElementById('manual-notes').value || "手動記錄";
+            const timeInput = document.getElementById('manual-time');
+            const sysInput = document.getElementById('manual-systolic');
+            const diaInput = document.getElementById('manual-diastolic');
+            const pulInput = document.getElementById('manual-pulse');
+            const notesInput = document.getElementById('manual-notes');
+
+            if (!timeInput || !sysInput || !diaInput || !pulInput) return;
+
+            const datetime = timeInput.value;
+            const sys = parseInt(sysInput.value);
+            const dia = parseInt(diaInput.value);
+            const pul = parseInt(pulInput.value);
+            const notes = (notesInput ? notesInput.value : "") || "手動記錄";
 
             if (isNaN(sys) || isNaN(dia) || isNaN(pul)) {
                 showToast("請輸入正確的數字格式", "fa-triangle-exclamation", "text-rose-500");
@@ -1099,10 +1174,12 @@
                 showToast("手動紀錄已安全存檔！", "fa-circle-check", "text-emerald-500");
             }
 
-            document.getElementById('manual-form').reset();
+            const manualForm = document.getElementById('manual-form');
+            if (manualForm) manualForm.reset();
+
             const now = new Date();
             now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
-            document.getElementById('manual-time').value = now.toISOString().slice(0, 16);
+            timeInput.value = now.toISOString().slice(0, 16);
 
             setTimeout(() => switchTab('history-tab'), 800);
         }
@@ -1160,7 +1237,7 @@
                 const dateObj = new Date(rec.datetime);
                 const dateStr = dateObj.toLocaleDateString('zh-TW');
                 const timeStr = dateObj.toLocaleTimeString('zh-TW', { hour: '2-digit', minute: '2-digit', hour12: false });
-                csvContent += `"${rec.member || '主成員(我)'}",${dateStr},${timeStr},${rec.systolic},${rec.diastolic},${rec.pulse},${rec.level},"${rec.notes.replace(/"/g, '""')}"\n`;
+                csvContent += `"${rec.member || '主成員(我)'}",${dateStr},${timeStr},${rec.systolic},${rec.diastolic},${rec.pulse},${rec.level},"${(rec.notes || '').replace(/"/g, '""')}"\n`;
             });
 
             const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
@@ -1179,6 +1256,8 @@
             const sysEl = document.getElementById('stat-avg-sys');
             const diaEl = document.getElementById('stat-avg-dia');
             const pulseEl = document.getElementById('stat-avg-pulse');
+
+            if (!sysEl || !diaEl || !pulseEl) return;
 
             const filteredDb = window.db.filter(rec => !rec.member || rec.member === window.currentMember);
 
@@ -1201,6 +1280,8 @@
         function renderHistoryList() {
             const listEl = document.getElementById('history-list');
             const noDataEl = document.getElementById('no-data-msg');
+
+            if (!listEl || !noDataEl) return;
 
             listEl.innerHTML = '';
             const filteredDb = window.db.filter(rec => !rec.member || rec.member === window.currentMember);
@@ -1251,12 +1332,19 @@
 
         function changeChartFilter(num) {
             window.chartFilterCount = num;
-            document.getElementById('chart-filter-7').className = num === 7 
-                ? "px-3 py-1 bg-indigo-50 text-indigo-600 font-semibold rounded-lg text-xs transition-all"
-                : "px-3 py-1 text-slate-600 font-semibold rounded-lg text-xs hover:bg-slate-50 transition-all";
-            document.getElementById('chart-filter-30').className = num === 30 
-                ? "px-3 py-1 bg-indigo-50 text-indigo-600 font-semibold rounded-lg text-xs transition-all"
-                : "px-3 py-1 text-slate-600 font-semibold rounded-lg text-xs hover:bg-slate-50 transition-all";
+            const filter7 = document.getElementById('chart-filter-7');
+            const filter30 = document.getElementById('chart-filter-30');
+
+            if (filter7) {
+                filter7.className = num === 7 
+                    ? "px-3 py-1 bg-indigo-50 text-indigo-600 font-semibold rounded-lg text-xs transition-all"
+                    : "px-3 py-1 text-slate-600 font-semibold rounded-lg text-xs hover:bg-slate-50 transition-all";
+            }
+            if (filter30) {
+                filter30.className = num === 30 
+                    ? "px-3 py-1 bg-indigo-50 text-indigo-600 font-semibold rounded-lg text-xs transition-all"
+                    : "px-3 py-1 text-slate-600 font-semibold rounded-lg text-xs hover:bg-slate-50 transition-all";
+            }
             
             if (window.chartInstance) {
                 window.chartInstance.destroy();
@@ -1269,6 +1357,11 @@
             if (!chartCanvas) return;
             const ctx = chartCanvas.getContext('2d');
             
+            if (typeof Chart === 'undefined') {
+                console.warn("Chart.js is not loaded yet.");
+                return;
+            }
+
             const filteredDb = window.db.filter(rec => !rec.member || rec.member === window.currentMember);
             const filteredAndSliced = [...filteredDb].slice(0, window.chartFilterCount).reverse();
             
@@ -1349,16 +1442,18 @@
 
         // 同步面板控制
         function openSyncModal() {
-            document.getElementById('sync-modal').classList.remove('hidden');
+            const modal = document.getElementById('sync-modal');
+            if (modal) modal.classList.remove('hidden');
         }
 
         function closeSyncModal() {
-            document.getElementById('sync-modal').classList.add('hidden');
+            const modal = document.getElementById('sync-modal');
+            if (modal) modal.classList.add('hidden');
         }
 
         function copySyncKey() {
             const keyInput = document.getElementById('device-sync-key');
-            if (!keyInput.value) {
+            if (!keyInput || !keyInput.value) {
                 showToast("雲端未初始化！請託管至 HTTPS 網站開啟功能！", "fa-triangle-exclamation", "text-amber-500");
                 return;
             }
@@ -1379,7 +1474,9 @@
         }
 
         function triggerConnectDevice() {
-            const targetKey = document.getElementById('target-sync-key').value.trim();
+            const targetInput = document.getElementById('target-sync-key');
+            if (!targetInput) return;
+            const targetKey = targetInput.value.trim();
             if (!targetKey) {
                 showToast("請輸入對應同步金鑰！", "fa-triangle-exclamation", "text-amber-500");
                 return;
@@ -1393,7 +1490,10 @@
                     localStorage.setItem('bp_custom_sync_uid', targetKey);
                     window.currentUserId = targetKey;
                     closeSyncModal();
-                    document.getElementById('sync-status').innerHTML = `<span class="w-2 h-2 bg-indigo-500 rounded-full mr-1 animate-pulse inline-block"></span> 連線中...`;
+                    const statusEl = document.getElementById('sync-status');
+                    if (statusEl) {
+                        statusEl.innerHTML = `<span class="w-2 h-2 bg-indigo-500 rounded-full mr-1 animate-pulse inline-block"></span> 連線中...`;
+                    }
                     if (window.reconnectCloudService) {
                         window.reconnectCloudService();
                     }
@@ -1405,6 +1505,8 @@
             const toast = document.getElementById('toast');
             const toastMessage = document.getElementById('toast-message');
             const toastIcon = document.getElementById('toast-icon');
+
+            if (!toast || !toastMessage || !toastIcon) return;
 
             toastMessage.innerText = message;
             toastIcon.className = `fa-solid ${iconClass} ${iconColorClass}`;
@@ -1444,7 +1546,10 @@
                     let unsubscribeLogs = null;
 
                     const initAuth = async () => {
-                        document.getElementById('sync-status').innerText = "☁️ 雲端加載中...";
+                        const syncStatusEl = document.getElementById('sync-status');
+                        if (syncStatusEl) {
+                            syncStatusEl.innerText = "☁️ 雲端加載中...";
+                        }
                         try {
                             if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
                                 await signInWithCustomToken(auth, __initial_auth_token);
@@ -1463,7 +1568,8 @@
                         if (user) {
                             const linkedUid = localStorage.getItem('bp_custom_sync_uid');
                             window.currentUserId = linkedUid || user.uid;
-                            document.getElementById('device-sync-key').value = user.uid;
+                            const keyInput = document.getElementById('device-sync-key');
+                            if (keyInput) keyInput.value = user.uid;
                             window.isCloudConnected = true;
                             startCloudSync(user.uid);
                         }
@@ -1498,7 +1604,7 @@
                             });
 
                             if (cloudItems.length === 0) {
-                                window.mockData.forEach(async (mock) => {
+                                mockData.forEach(async (mock) => {
                                     await setDoc(doc(firestoreDb, 'artifacts', appId, 'users', activeUid, 'bp_logs', mock.id), mock);
                                 });
                                 return;
@@ -1524,10 +1630,14 @@
                             if (window.chartInstance) window.chartInstance.destroy();
                             window.initChart();
 
-                            document.getElementById('sync-status').innerHTML = `<span class="w-2 h-2 bg-emerald-500 rounded-full mr-1 inline-block animate-pulse"></span> 實時雲端已同步`;
+                            const syncStatusEl = document.getElementById('sync-status');
+                            if (syncStatusEl) {
+                                syncStatusEl.innerHTML = `<span class="w-2 h-2 bg-emerald-500 rounded-full mr-1 inline-block animate-pulse"></span> 實時雲端已同步`;
+                            }
                         }, (err) => {
                             console.error("雲端拉取失敗：", err);
-                            document.getElementById('sync-status').innerText = "⚠️ 雲端連線異常";
+                            const syncStatusEl = document.getElementById('sync-status');
+                            if (syncStatusEl) syncStatusEl.innerText = "⚠️ 雲端連線異常";
                         });
                     };
 
@@ -1577,30 +1687,41 @@
                 console.error("Firebase 加載異常", err);
             }
 
-            // ==================== Gemini 智能 OCR 核心 (支援 API 金鑰自配置與 Fallback) ====================
+            // ==================== Gemini 智能 OCR 核心 ====================
             window.triggerGeminiOcr = async (base64Data) => {
                 const resultCard = document.getElementById('result-card');
                 const analyzingState = document.getElementById('analyzing-state');
 
-                resultCard.classList.add('hidden');
+                if (resultCard) resultCard.classList.add('hidden');
                 
                 const apiKey = localStorage.getItem('gemini_api_key') || "";
                 
                 // UX 核心：防呆設計，若沒有填寫 API 金鑰，提示並降級引導
                 if (!apiKey) {
                     window.showToast("請先設定您的 Gemini API 金鑰！", "fa-key", "text-amber-500");
-                    document.getElementById('ocr-systolic').value = '';
-                    document.getElementById('ocr-diastolic').value = '';
-                    document.getElementById('ocr-pulse').value = '';
-                    document.getElementById('ocr-notes').innerText = '請點選右上角『雲端與金鑰設定』面板，輸入您免費申請的 Google Gemini API Key。現在您可以先在下方核對並手動登入數值。';
+                    const sysEl = document.getElementById('ocr-systolic');
+                    const diaEl = document.getElementById('ocr-diastolic');
+                    const pulseEl = document.getElementById('ocr-pulse');
+                    const notesEl = document.getElementById('ocr-notes');
                     
-                    resultCard.classList.remove('hidden');
-                    resultCard.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                    if (sysEl) sysEl.value = '';
+                    if (diaEl) diaEl.value = '';
+                    if (pulseEl) pulseEl.value = '';
+                    if (notesEl) {
+                        notesEl.innerText = '請點選右上角『雲端與金鑰設定』面板，輸入您免費申請的 Google Gemini API Key。現在您可以先在下方核對並手動登入數值。';
+                    }
+                    
+                    if (resultCard) {
+                        resultCard.classList.remove('hidden');
+                        resultCard.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                    }
                     return;
                 }
 
-                analyzingState.classList.remove('hidden');
-                analyzingState.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                if (analyzingState) {
+                    analyzingState.classList.remove('hidden');
+                    analyzingState.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                }
 
                 const pureBase64 = base64Data.split(',')[1];
                 const prompt = `您是一位專業的醫療器材面板辨識 (OCR) 專家。請精準讀取這張電子血壓計畫面中的三個數值：
@@ -1672,26 +1793,39 @@
                     }
                 }
 
-                analyzingState.classList.add('hidden');
+                if (analyzingState) analyzingState.classList.add('hidden');
+
+                const sysEl = document.getElementById('ocr-systolic');
+                const diaEl = document.getElementById('ocr-diastolic');
+                const pulseEl = document.getElementById('ocr-pulse');
+                const notesEl = document.getElementById('ocr-notes');
 
                 if (successResponse && resultJson && resultJson.success) {
-                    document.getElementById('ocr-systolic').value = resultJson.systolic || '';
-                    document.getElementById('ocr-diastolic').value = resultJson.diastolic || '';
-                    document.getElementById('ocr-pulse').value = resultJson.pulse || '';
-                    document.getElementById('ocr-notes').innerText = "AI 拍照辨識: " + (resultJson.confidence_explanation || '照片辨識成功，請確認高低壓與脈搏。');
+                    if (sysEl) sysEl.value = resultJson.systolic || '';
+                    if (diaEl) diaEl.value = resultJson.diastolic || '';
+                    if (pulseEl) pulseEl.value = resultJson.pulse || '';
+                    if (notesEl) {
+                        notesEl.innerText = (resultJson.confidence_explanation || '照片辨識成功，請確認高低壓與脈搏。');
+                    }
                     
-                    resultCard.classList.remove('hidden');
-                    resultCard.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                    if (resultCard) {
+                        resultCard.classList.remove('hidden');
+                        resultCard.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                    }
                     window.showToast("辨識完成，請確認數字是否正確！", "fa-circle-check", "text-indigo-500");
                 } else {
                     window.showToast("無法辨識數據！請手動鍵入或點選重新拍攝。", "fa-circle-exclamation", "text-rose-500");
-                    document.getElementById('ocr-systolic').value = '';
-                    document.getElementById('ocr-diastolic').value = '';
-                    document.getElementById('ocr-pulse').value = '';
-                    document.getElementById('ocr-notes').innerText = '未能在照片中偵測到清晰的血壓計數字（可能受反光或角度影響）。您可以直接在下方手動鍵入。';
+                    if (sysEl) sysEl.value = '';
+                    if (diaEl) diaEl.value = '';
+                    if (pulseEl) pulseEl.value = '';
+                    if (notesEl) {
+                        notesEl.innerText = '未能在照片中偵測到清晰的血壓計數字（可能受反光或角度影響）。您可以直接在下方手動鍵入。';
+                    }
                     
-                    resultCard.classList.remove('hidden');
-                    resultCard.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                    if (resultCard) {
+                        resultCard.classList.remove('hidden');
+                        resultCard.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                    }
                 }
             };
         }

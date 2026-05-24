@@ -5,35 +5,32 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>血壓照相機 - 智能血壓健康助手</title>
     
-    <!-- PWA 手機桌面安裝設定 -->
+    <!-- PWA 手機桌面安裝設定 (iOS & Android 兼容) -->
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="血壓照相機">
     <link rel="apple-touch-icon" href="https://placehold.co/180x180/4f46e5/ffffff?text=BP">
     
-    <!-- 嵌入式 Web App Manifest 資料 -->
-    <link rel="manifest" href='data:application/manifest+json,{"name":"血壓照相機 - AI智能血壓健康助手","short_name":"血壓照相機","start_url":".","display":"standalone","background_color":"#f8fafc","theme_color":"#4f46e5","icons":[{"src":"https://placehold.co/192x192/4f46e5/ffffff?text=BP","sizes":"192x192","type":"image/png"}]}' />
+    <!-- 嵌入式 Web App Manifest 資料 (免除外置 JSON 檔限制) -->
+    <link rel="manifest" href='data:application/manifest+json,{"name":"血壓照相機 - AI智能血壓健康助手","short_name":"血壓照相機","start_url":".","display":"standalone","background_color":"#f8fafc","theme_color":"#4f46e5","icons":[{"src":"https://placehold.co/192x192/4f46e5/ffffff?text=BP","sizes":"192x192","type":"image/png"},{"src":"https://placehold.co/512x512/512x512?text=BP","sizes":"512x512","type":"image/png"}]}' />
 
-    <!-- 載入高品質外部套件 -->
+    <!-- 載入外部現代化高質感 CDN 組件 -->
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     
     <style>
         body {
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
         }
         .bg-gradient-mesh {
             background-color: #f8fafc;
-            background-image: radial-gradient(at 0% 0%, rgba(243, 244, 246, 0.6) 0, transparent 50%), 
-                              radial-gradient(at 50% 0%, rgba(219, 234, 254, 0.4) 0, transparent 50%), 
+            background-image: radial-gradient(at 0% 0%, rgba(243, 244, 246, 0.5) 0, transparent 50%), 
+                              radial-gradient(at 50% 0%, rgba(219, 234, 254, 0.3) 0, transparent 50%), 
                               radial-gradient(at 100% 0%, rgba(254, 226, 226, 0.2) 0, transparent 50%);
         }
-        /* 轉場動畫與平滑滾動 */
-        .transition-all-300 {
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        }
+        /* 美化滾動條 */
         ::-webkit-scrollbar {
             width: 6px;
         }
@@ -54,20 +51,20 @@
     <header class="sticky top-0 z-40 bg-white/80 backdrop-blur-md border-b border-slate-200">
         <div class="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between">
             <div class="flex items-center space-x-3">
-                <div class="w-10 h-10 bg-gradient-to-tr from-indigo-600 to-indigo-500 rounded-xl flex items-center justify-center text-white shadow-lg shadow-indigo-100">
+                <div class="w-10 h-10 bg-indigo-600 rounded-xl flex items-center justify-center text-white shadow-lg shadow-indigo-100">
                     <i class="fa-solid fa-heart-pulse text-lg animate-pulse"></i>
                 </div>
                 <div>
                     <h1 class="text-base font-bold text-slate-900 tracking-tight sm:text-lg">血壓照相機</h1>
-                    <p class="text-[10px] sm:text-xs text-slate-500 font-medium">個人極速閃電版 ｜ 拍完即走無痛記錄</p>
+                    <p class="text-[10px] sm:text-xs text-slate-500">極速拍照 ｜ 免打字個人健康管家</p>
                 </div>
             </div>
             
             <div class="flex items-center space-x-2">
-                <!-- 雲端同步與個人 API 金鑰按鈕 -->
-                <button onclick="openSyncModal()" class="flex items-center space-x-1 px-3.5 py-1.5 rounded-full bg-indigo-50 hover:bg-indigo-100 text-indigo-700 text-xs font-semibold border border-indigo-100/50 transition-all-300 shadow-sm shadow-indigo-50">
-                    <i class="fa-solid fa-cloud-arrow-up"></i>
-                    <span id="sync-status" class="hidden xs:inline">雲端載入中...</span>
+                <!-- 簡化右上角：只保留乾淨的 API 金鑰設定按鈕 -->
+                <button onclick="openApiKeyModal()" class="flex items-center space-x-1.5 px-3.5 py-1.5 rounded-full bg-indigo-50 hover:bg-indigo-100 text-indigo-700 text-xs font-bold border border-indigo-150 transition-all shadow-sm">
+                    <i class="fa-solid fa-key"></i>
+                    <span>Gemini API 金鑰</span>
                 </button>
             </div>
         </div>
@@ -75,44 +72,43 @@
 
     <main class="flex-grow max-w-6xl w-full mx-auto px-4 py-6 flex flex-col gap-6">
         
-        <!-- 三大分頁導覽標籤 -->
+        <!-- 分頁切換標籤 -->
         <div class="bg-white p-1 rounded-2xl shadow-sm border border-slate-200 flex space-x-1">
-            <button onclick="switchTab('photo-tab')" id="btn-photo-tab" class="tab-btn flex-1 py-3 px-4 rounded-xl text-sm font-semibold flex items-center justify-center space-x-2 transition-all-300 bg-indigo-600 text-white shadow-sm">
+            <button onclick="switchTab('photo-tab')" id="btn-photo-tab" class="tab-btn flex-1 py-3 px-4 rounded-xl text-sm font-bold flex items-center justify-center space-x-2 transition-all bg-indigo-600 text-white shadow-sm">
                 <i class="fa-solid fa-camera text-base"></i>
                 <span>拍照辨識</span>
             </button>
-            <button onclick="switchTab('history-tab')" id="btn-history-tab" class="tab-btn flex-1 py-3 px-4 rounded-xl text-sm font-semibold flex items-center justify-center space-x-2 transition-all-300 text-slate-600 hover:bg-slate-50">
+            <button onclick="switchTab('history-tab')" id="btn-history-tab" class="tab-btn flex-1 py-3 px-4 rounded-xl text-sm font-bold flex items-center justify-center space-x-2 transition-all text-slate-600 hover:bg-slate-50">
                 <i class="fa-solid fa-chart-line text-base"></i>
                 <span>歷史趨勢</span>
             </button>
-            <button onclick="switchTab('manual-tab')" id="btn-manual-tab" class="tab-btn flex-1 py-3 px-4 rounded-xl text-sm font-semibold flex items-center justify-center space-x-2 transition-all-300 text-slate-600 hover:bg-slate-50">
+            <button onclick="switchTab('manual-tab')" id="btn-manual-tab" class="tab-btn flex-1 py-3 px-4 rounded-xl text-sm font-bold flex items-center justify-center space-x-2 transition-all text-slate-600 hover:bg-slate-50">
                 <i class="fa-solid fa-keyboard text-base"></i>
                 <span>手動輸入</span>
             </button>
-            <button onclick="switchTab('info-tab')" id="btn-info-tab" class="tab-btn flex-1 py-3 px-4 rounded-xl text-sm font-semibold flex items-center justify-center space-x-2 transition-all-300 text-slate-600 hover:bg-slate-50">
+            <button onclick="switchTab('info-tab')" id="btn-info-tab" class="tab-btn flex-1 py-3 px-4 rounded-xl text-sm font-bold flex items-center justify-center space-x-2 transition-all text-slate-600 hover:bg-slate-50">
                 <i class="fa-solid fa-circle-info text-base"></i>
                 <span>健康指標</span>
             </button>
         </div>
 
-        <!-- 拍照分頁 -->
+        <!-- 1. 拍照辨識分頁 -->
         <div id="photo-tab" class="tab-content flex flex-col gap-6">
             
-            <!-- 上傳與鏡頭快照主要卡片 -->
             <div class="bg-white rounded-3xl p-6 shadow-sm border border-slate-200 flex flex-col items-center">
                 <div class="w-full max-w-lg text-center">
-                    <h2 class="text-xl font-bold text-slate-900 mb-2">拍攝血壓計螢幕畫面</h2>
-                    <p class="text-xs sm:text-sm text-slate-500 mb-6">點擊拍照，Gemini AI 會全自動為您讀取收縮壓、舒張壓與脈搏</p>
+                    <h2 class="text-xl font-bold text-slate-900 mb-1">拍攝血壓計螢幕畫面</h2>
+                    <p class="text-xs sm:text-sm text-slate-500 mb-6">點擊拍照或上傳照片，Gemini AI 會自動讀取收縮壓、舒張壓與脈搏</p>
                     
-                    <!-- 上傳熱區 -->
-                    <div id="drop-zone" class="border-2 border-dashed border-slate-300 hover:border-indigo-500 rounded-2xl p-8 cursor-pointer transition-all-300 bg-slate-50 hover:bg-indigo-50/10 group relative overflow-hidden flex flex-col items-center justify-center min-h-[220px]">
+                    <!-- 檔案上傳預覽區 -->
+                    <div id="drop-zone" class="border-2 border-dashed border-slate-300 hover:border-indigo-500 rounded-2xl p-8 cursor-pointer transition-all bg-slate-50 hover:bg-indigo-50/10 group relative overflow-hidden flex flex-col items-center justify-center min-h-[220px]">
                         <input type="file" id="file-input" accept="image/*" class="hidden">
                         <div id="upload-prompt" class="flex flex-col items-center">
-                            <div class="w-16 h-16 bg-white rounded-2xl flex items-center justify-center text-slate-400 group-hover:text-indigo-600 group-hover:scale-110 transition-all-300 shadow-sm mb-4">
+                            <div class="w-16 h-16 bg-white rounded-2xl flex items-center justify-center text-slate-400 group-hover:text-indigo-600 group-hover:scale-110 transition-all shadow-sm mb-4">
                                 <i class="fa-solid fa-cloud-arrow-up text-2xl"></i>
                             </div>
                             <p class="text-sm font-bold text-slate-700">選擇照片 / 開啟相機拍照</p>
-                            <p class="text-xs text-slate-400 mt-1">支援各品牌電子血壓計畫面</p>
+                            <p class="text-xs text-slate-400 mt-1">支援各品牌電子血壓計螢幕</p>
                         </div>
                         
                         <!-- 預覽大圖 -->
@@ -124,26 +120,26 @@
                         </div>
                     </div>
 
-                    <!-- 即時相機和相簿操作按鈕 -->
+                    <!-- 即時視訊控制 -->
                     <div class="mt-4 flex flex-col sm:flex-row justify-center gap-3">
-                        <button onclick="triggerFileInput()" class="flex-1 py-3 px-5 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold rounded-xl text-sm flex items-center justify-center gap-2 shadow-sm transition-all-300">
+                        <button onclick="triggerFileInput()" class="flex-1 py-3 px-5 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl text-sm flex items-center justify-center gap-2 shadow-sm transition-all">
                             <i class="fa-solid fa-image"></i>
                             選擇照片或拍照
                         </button>
-                        <button id="btn-toggle-camera" onclick="startCameraStream()" class="flex-1 py-3 px-5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold rounded-xl text-sm flex items-center justify-center gap-2 transition-all-300">
+                        <button id="btn-toggle-camera" onclick="startCameraStream()" class="flex-1 py-3 px-5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold rounded-xl text-sm flex items-center justify-center gap-2 transition-all">
                             <i class="fa-solid fa-video"></i>
                             啟動即時視訊鏡頭
                         </button>
                     </div>
 
-                    <!-- 即時視訊區 -->
+                    <!-- 即時視訊相機畫面 -->
                     <div id="camera-container" class="hidden mt-4 bg-black rounded-2xl overflow-hidden relative aspect-video w-full max-w-md mx-auto">
                         <video id="webcam" class="w-full h-full object-cover" autoplay playsinline></video>
                         <div class="absolute bottom-4 left-0 right-0 flex justify-center space-x-3 px-4">
-                            <button onclick="capturePhoto()" class="bg-indigo-600 hover:bg-indigo-700 text-white w-14 h-14 rounded-full flex items-center justify-center shadow-lg transition-all-300 border-4 border-white">
+                            <button onclick="capturePhoto()" class="bg-indigo-600 hover:bg-indigo-700 text-white w-14 h-14 rounded-full flex items-center justify-center shadow-lg transition-all border-4 border-white">
                                 <i class="fa-solid fa-camera text-xl"></i>
                             </button>
-                            <button onclick="stopCameraStream()" class="bg-slate-800/80 hover:bg-slate-800 text-white w-14 h-14 rounded-full flex items-center justify-center shadow-lg transition-all-300">
+                            <button onclick="stopCameraStream()" class="bg-slate-800/80 hover:bg-slate-800 text-white w-14 h-14 rounded-full flex items-center justify-center shadow-lg transition-all">
                                 <i class="fa-solid fa-video-slash"></i>
                             </button>
                         </div>
@@ -156,16 +152,16 @@
                 <div class="relative w-20 h-20 mb-4 flex items-center justify-center">
                     <div class="absolute inset-0 border-4 border-indigo-100 rounded-full"></div>
                     <div class="absolute inset-0 border-4 border-t-indigo-600 rounded-full animate-spin"></div>
-                    <i class="fa-solid fa-brain text-2xl text-indigo-600 animate-bounce"></i>
+                    <i class="fa-solid fa-brain text-2xl text-indigo-600"></i>
                 </div>
                 <h3 class="text-lg font-bold text-slate-800 mb-1">Gemini AI 正在解讀您的血壓數據...</h3>
                 <p class="text-xs text-slate-400 max-w-xs">這大約需要 2-3 秒，我們正在自動擷取收縮壓、舒張壓與脈搏</p>
             </div>
 
-            <!-- 辨識確認卡片 (結合 5秒閃電自動儲存 + 免打字生理標籤 + 臨床級脈壓分析) -->
-            <div id="result-card" class="hidden bg-white rounded-3xl p-6 shadow-xl border border-indigo-100 relative overflow-hidden transition-all-300">
+            <!-- 辨識確認卡片 -->
+            <div id="result-card" class="hidden bg-white rounded-3xl p-6 shadow-xl border border-indigo-100 relative overflow-hidden transition-all">
                 
-                <!-- 5秒閃電自動存檔：倒數計時條 -->
+                <!-- 5秒閃電自動存檔進度條 -->
                 <div class="absolute top-0 left-0 right-0 h-1.5 bg-slate-100">
                     <div id="save-progress-bar" class="h-full bg-indigo-600 rounded-r-full transition-all duration-100" style="width: 100%;"></div>
                 </div>
@@ -187,7 +183,7 @@
                             <i class="fa-solid fa-circle-notch animate-spin text-[10px]"></i>
                             <span>5 秒後閃電自動存檔...</span>
                         </span>
-                        <button onclick="pauseCountdown()" id="btn-pause-countdown" class="px-2.5 py-1 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-lg text-[11px] font-bold transition-all-300 flex items-center gap-1">
+                        <button onclick="pauseCountdown()" id="btn-pause-countdown" class="px-2.5 py-1 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-lg text-[11px] font-bold transition-all flex items-center gap-1">
                             <i class="fa-solid fa-pause"></i>
                             暫停
                         </button>
@@ -221,7 +217,7 @@
                     </div>
                 </div>
 
-                <!-- 臨床級生理與健康指標即時分析區 -->
+                <!-- 臨床級生理與健康指標即時分析 -->
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-5">
                     <!-- 脈壓差分析 -->
                     <div id="pulse-pressure-card" class="bg-slate-50 border border-slate-200/60 rounded-xl p-3 flex items-center justify-between">
@@ -246,36 +242,36 @@
                 <div class="mb-5">
                     <label class="block text-xs font-bold text-slate-500 mb-2">💡 快速記錄當下生理狀態 (免打字)</label>
                     <div id="context-tags-container" class="flex flex-wrap gap-2">
-                        <button onclick="toggleContextTag(this, '🌅 晨起')" class="context-tag-btn px-3 py-1.5 rounded-xl text-xs font-semibold bg-slate-50 border border-slate-200 text-slate-600 hover:bg-slate-100 transition-all-300">🌅 晨起</button>
-                        <button onclick="toggleContextTag(this, '🌙 睡前')" class="context-tag-btn px-3 py-1.5 rounded-xl text-xs font-semibold bg-slate-50 border border-slate-200 text-slate-600 hover:bg-slate-100 transition-all-300">🌙 睡前</button>
-                        <button onclick="toggleContextTag(this, '🏋️ 運動後')" class="context-tag-btn px-3 py-1.5 rounded-xl text-xs font-semibold bg-slate-50 border border-slate-200 text-slate-600 hover:bg-slate-100 transition-all-300">🏋️ 運動後</button>
-                        <button onclick="toggleContextTag(this, '💊 服藥後')" class="context-tag-btn px-3 py-1.5 rounded-xl text-xs font-semibold bg-slate-50 border border-slate-200 text-slate-600 hover:bg-slate-100 transition-all-300">💊 服藥後</button>
-                        <button onclick="toggleContextTag(this, '⚠️ 感到不適')" class="context-tag-btn px-3 py-1.5 rounded-xl text-xs font-semibold bg-slate-50 border border-slate-200 text-slate-600 hover:bg-slate-100 transition-all-300">⚠️ 感到不適</button>
+                        <button onclick="toggleContextTag(this, '🌅 晨起')" class="context-tag-btn px-3 py-1.5 rounded-xl text-xs font-semibold bg-slate-50 border border-slate-200 text-slate-600 hover:bg-slate-100 transition-all">🌅 晨起</button>
+                        <button onclick="toggleContextTag(this, '🌙 睡前')" class="context-tag-btn px-3 py-1.5 rounded-xl text-xs font-semibold bg-slate-50 border border-slate-200 text-slate-600 hover:bg-slate-100 transition-all">🌙 睡前</button>
+                        <button onclick="toggleContextTag(this, '🏋️ 運動後')" class="context-tag-btn px-3 py-1.5 rounded-xl text-xs font-semibold bg-slate-50 border border-slate-200 text-slate-600 hover:bg-slate-100 transition-all">🏋️ 運動後</button>
+                        <button onclick="toggleContextTag(this, '💊 服藥後')" class="context-tag-btn px-3 py-1.5 rounded-xl text-xs font-semibold bg-slate-50 border border-slate-200 text-slate-600 hover:bg-slate-100 transition-all">💊 服藥後</button>
+                        <button onclick="toggleContextTag(this, '⚠️ 感到不適')" class="context-tag-btn px-3 py-1.5 rounded-xl text-xs font-semibold bg-slate-50 border border-slate-200 text-slate-600 hover:bg-slate-100 transition-all">⚠️ 感到不適</button>
                     </div>
                 </div>
 
                 <!-- 自訂備註 (選填) -->
                 <div class="mb-5">
                     <label class="block text-xs font-bold text-slate-500 mb-1.5">其他手動備註 (選填)</label>
-                    <input type="text" id="ocr-custom-notes" oninput="handleOcrInputChange()" class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 outline-none text-xs font-medium transition-all-300" placeholder="如果有其他補充，例如：咖啡後半小時">
+                    <input type="text" id="ocr-custom-notes" oninput="handleOcrInputChange()" class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 outline-none text-xs font-medium transition-all" placeholder="如果有其他補充，例如：剛吃完早餐">
                 </div>
 
-                <!-- 隱藏式 AI 信心文本容器（不污染日誌排版，僅用作除錯） -->
+                <!-- 隱藏式 AI 信心文本容器（僅用作除錯） -->
                 <p id="ocr-notes" class="hidden"></p>
 
                 <div class="flex flex-col sm:flex-row gap-3">
-                    <button onclick="saveOcrResult()" class="flex-1 py-3.5 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold rounded-xl text-sm flex items-center justify-center gap-2 shadow-lg shadow-indigo-100 transition-all-300 hover:scale-[1.01]">
+                    <button onclick="saveOcrResult()" class="flex-1 py-3.5 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl text-sm flex items-center justify-center gap-2 shadow-lg shadow-indigo-100 transition-all hover:scale-[1.01]">
                         <i class="fa-solid fa-check-double"></i>
                         立即儲存
                     </button>
-                    <button onclick="discardOcrResult()" class="py-3.5 px-6 bg-slate-100 hover:bg-slate-200 text-slate-600 font-semibold rounded-xl text-sm transition-all-300">
+                    <button onclick="discardOcrResult()" class="py-3.5 px-6 bg-slate-100 hover:bg-slate-200 text-slate-600 font-semibold rounded-xl text-sm transition-all">
                         重新拍照
                     </button>
                 </div>
             </div>
         </div>
 
-        <!-- 歷史走勢與圖表分頁 -->
+        <!-- 2. 歷史走勢與圖表分頁 -->
         <div id="history-tab" class="tab-content hidden flex flex-col gap-6">
             
             <!-- 圖表卡片 -->
@@ -283,20 +279,20 @@
                 <div class="flex items-center justify-between border-b border-slate-100 pb-4 mb-4">
                     <div>
                         <h3 class="text-base font-bold text-slate-900">血壓波動趨勢線</h3>
-                        <p class="text-xs text-slate-500">視覺化觀察收縮壓、舒張壓與脈博變化</p>
+                        <p class="text-xs text-slate-500">視覺化觀察收縮壓、舒張壓與脈搏變化</p>
                     </div>
                     <div class="flex space-x-1">
-                        <button onclick="changeChartFilter(7)" id="chart-filter-7" class="px-3 py-1 bg-indigo-50 text-indigo-600 font-semibold rounded-lg text-xs transition-all-300">7 次</button>
-                        <button onclick="changeChartFilter(30)" id="chart-filter-30" class="px-3 py-1 text-slate-600 font-semibold rounded-lg text-xs hover:bg-slate-50 transition-all-300">30 次</button>
+                        <button onclick="changeChartFilter(7)" id="chart-filter-7" class="px-3 py-1 bg-indigo-50 text-indigo-600 font-bold rounded-lg text-xs transition-all">7 次</button>
+                        <button onclick="changeChartFilter(30)" id="chart-filter-30" class="px-3 py-1 text-slate-600 font-semibold rounded-lg text-xs hover:bg-slate-50 transition-all">30 次</button>
                     </div>
                 </div>
                 <div class="relative w-full h-[300px]">
                     <canvas id="bpChart"></canvas>
                 </div>
 
-                <!-- 移動至此：個人今日/最近健康平均數據概覽卡片（趨勢線下方） -->
+                <!-- 移動至此：個人健康平均數據概覽卡片（趨勢線下方） -->
                 <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mt-6 pt-6 border-t border-slate-100">
-                    <div class="bg-slate-50 p-4 sm:p-5 rounded-2xl border border-slate-100 flex items-center space-x-4">
+                    <div class="bg-slate-50 p-4 rounded-2xl border border-slate-100 flex items-center space-x-4">
                         <div class="w-12 h-12 rounded-xl bg-rose-50 text-rose-500 flex items-center justify-center text-lg font-bold">
                             <i class="fa-solid fa-arrow-trend-up"></i>
                         </div>
@@ -305,7 +301,7 @@
                             <p id="stat-avg-sys" class="text-lg font-bold text-slate-900 mt-0.5">-- <span class="text-xs text-slate-400 font-normal">mmHg</span></p>
                         </div>
                     </div>
-                    <div class="bg-slate-50 p-4 sm:p-5 rounded-2xl border border-slate-100 flex items-center space-x-4">
+                    <div class="bg-slate-50 p-4 rounded-2xl border border-slate-100 flex items-center space-x-4">
                         <div class="w-12 h-12 rounded-xl bg-blue-50 text-blue-500 flex items-center justify-center text-lg font-bold">
                             <i class="fa-solid fa-arrow-trend-down"></i>
                         </div>
@@ -314,7 +310,7 @@
                             <p id="stat-avg-dia" class="text-lg font-bold text-slate-900 mt-0.5">-- <span class="text-xs text-slate-400 font-normal">mmHg</span></p>
                         </div>
                     </div>
-                    <div class="bg-slate-50 p-4 sm:p-5 rounded-2xl border border-slate-100 flex items-center space-x-4">
+                    <div class="bg-slate-50 p-4 rounded-2xl border border-slate-100 flex items-center space-x-4">
                         <div class="w-12 h-12 rounded-xl bg-emerald-50 text-emerald-500 flex items-center justify-center text-lg font-bold">
                             <i class="fa-solid fa-heart animate-pulse"></i>
                         </div>
@@ -326,28 +322,28 @@
                 </div>
             </div>
 
-            <!-- 卡片流測量日誌 (極美、去噪、排除多餘字串破壞) -->
+            <!-- 緊湊型高質感卡片流歷史日誌 -->
             <div class="bg-white rounded-3xl shadow-sm border border-slate-200 overflow-hidden flex flex-col">
                 <div class="p-6 border-b border-slate-100 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                     <div>
                         <h3 class="text-base font-bold text-slate-900">歷史測量日誌</h3>
-                        <p class="text-xs text-slate-500">查看、編輯與管理您的個人血壓歷史數據流</p>
+                        <p class="text-xs text-slate-500">查看與管理您的個人血壓歷史數據流（單行高密度呈現）</p>
                     </div>
                     <div class="flex space-x-2 w-full sm:w-auto">
-                        <button onclick="exportCSV()" class="flex-1 sm:flex-initial py-2.5 px-4 bg-slate-50 hover:bg-slate-100 text-slate-700 font-semibold rounded-xl text-xs flex items-center justify-center gap-1.5 border border-slate-200 transition-all-300 shadow-sm shadow-slate-100">
+                        <button onclick="exportCSV()" class="flex-1 sm:flex-initial py-2.5 px-4 bg-slate-50 hover:bg-slate-100 text-slate-700 font-bold rounded-xl text-xs flex items-center justify-center gap-1.5 border border-slate-200 transition-all shadow-sm">
                             <i class="fa-solid fa-file-csv text-slate-500"></i>
                             匯出 CSV 表格
                         </button>
-                        <button onclick="triggerClearAllConfirm()" class="py-2.5 px-4 bg-rose-50 hover:bg-rose-100 text-rose-600 font-semibold rounded-xl text-xs flex items-center justify-center gap-1.5 border border-rose-150 transition-all-300">
+                        <button onclick="triggerClearAllConfirm()" class="py-2.5 px-4 bg-rose-50 hover:bg-rose-100 text-rose-600 font-bold rounded-xl text-xs flex items-center justify-center gap-1.5 border border-rose-100 transition-all">
                             <i class="fa-solid fa-trash-can"></i>
                             清空數據
                         </button>
                     </div>
                 </div>
 
-                <!-- 智感去噪卡片流容器 -->
-                <div id="history-list" class="p-6 space-y-4">
-                    <!-- JS 動態寫入高度美化的卡片 -->
+                <!-- 智感高密度卡片流容器 -->
+                <div id="history-list" class="p-4 space-y-2">
+                    <!-- JS 動態寫入高度整合一體、無贅字高雅緊湊卡片 -->
                 </div>
 
                 <div id="no-data-msg" class="hidden p-16 text-center text-slate-400">
@@ -357,7 +353,7 @@
             </div>
         </div>
 
-        <!-- 手動鍵入分頁 -->
+        <!-- 3. 手動輸入分頁 -->
         <div id="manual-tab" class="tab-content hidden flex flex-col gap-6">
             <div class="bg-white rounded-3xl p-6 shadow-sm border border-slate-200 max-w-xl mx-auto w-full">
                 <div class="border-b border-slate-100 pb-4 mb-5">
@@ -368,43 +364,43 @@
                 <form id="manual-form" onsubmit="saveManualInput(event)" class="space-y-4">
                     <div>
                         <label class="block text-xs font-bold text-slate-500 mb-1">測量時間</label>
-                        <input type="datetime-local" id="manual-time" class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 outline-none text-sm transition-all-300" required>
+                        <input type="datetime-local" id="manual-time" class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 outline-none text-sm transition-all" required>
                     </div>
                     
                     <div class="grid grid-cols-2 gap-4">
                         <div>
                             <label class="block text-xs font-bold text-slate-500 mb-1">收縮壓 SYS (mmHg)</label>
-                            <input type="number" id="manual-systolic" min="50" max="250" class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 outline-none text-sm transition-all-300" placeholder="如 120" required>
+                            <input type="number" id="manual-systolic" min="50" max="250" class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 outline-none text-sm transition-all" placeholder="如 120" required>
                         </div>
                         <div>
                             <label class="block text-xs font-bold text-slate-500 mb-1">舒張壓 DIA (mmHg)</label>
-                            <input type="number" id="manual-diastolic" min="30" max="180" class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 outline-none text-sm transition-all-300" placeholder="如 80" required>
+                            <input type="number" id="manual-diastolic" min="30" max="180" class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 outline-none text-sm transition-all" placeholder="如 80" required>
                         </div>
                     </div>
 
                     <div>
                         <label class="block text-xs font-bold text-slate-500 mb-1">脈搏 PULSE (bpm)</label>
-                        <input type="number" id="manual-pulse" min="30" max="220" class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 outline-none text-sm transition-all-300" placeholder="如 72" required>
+                        <input type="number" id="manual-pulse" min="30" max="220" class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 outline-none text-sm transition-all" placeholder="如 72" required>
                     </div>
 
                     <!-- 手動輸入的生理狀態 -->
                     <div>
                         <label class="block text-xs font-bold text-slate-500 mb-2">生理狀態 / 當下環境</label>
                         <div id="manual-tags-container" class="flex flex-wrap gap-2">
-                            <button type="button" onclick="selectManualTag(this, '🌅 晨起')" class="manual-tag-btn px-3 py-1.5 rounded-xl text-xs font-semibold bg-slate-50 border border-slate-200 text-slate-600 hover:bg-slate-100 transition-all-300">🌅 晨起</button>
-                            <button type="button" onclick="selectManualTag(this, '🌙 睡前')" class="manual-tag-btn px-3 py-1.5 rounded-xl text-xs font-semibold bg-slate-50 border border-slate-200 text-slate-600 hover:bg-slate-100 transition-all-300">🌙 睡前</button>
-                            <button type="button" onclick="selectManualTag(this, '🏋️ 運動後')" class="manual-tag-btn px-3 py-1.5 rounded-xl text-xs font-semibold bg-slate-50 border border-slate-200 text-slate-600 hover:bg-slate-100 transition-all-300">🏋️ 運動後</button>
-                            <button type="button" onclick="selectManualTag(this, '💊 服藥後')" class="manual-tag-btn px-3 py-1.5 rounded-xl text-xs font-semibold bg-slate-50 border border-slate-200 text-slate-600 hover:bg-slate-100 transition-all-300">💊 服藥後</button>
-                            <button type="button" onclick="selectManualTag(this, '⚠️ 感到不適')" class="manual-tag-btn px-3 py-1.5 rounded-xl text-xs font-semibold bg-slate-50 border border-slate-200 text-slate-600 hover:bg-slate-100 transition-all-300">⚠️ 感到不適</button>
+                            <button type="button" onclick="selectManualTag(this, '🌅 晨起')" class="manual-tag-btn px-3 py-1.5 rounded-xl text-xs font-semibold bg-slate-50 border border-slate-200 text-slate-600 hover:bg-slate-100 transition-all">🌅 晨起</button>
+                            <button type="button" onclick="selectManualTag(this, '🌙 睡前')" class="manual-tag-btn px-3 py-1.5 rounded-xl text-xs font-semibold bg-slate-50 border border-slate-200 text-slate-600 hover:bg-slate-100 transition-all">🌙 睡前</button>
+                            <button type="button" onclick="selectManualTag(this, '🏋️ 運動後')" class="manual-tag-btn px-3 py-1.5 rounded-xl text-xs font-semibold bg-slate-50 border border-slate-200 text-slate-600 hover:bg-slate-100 transition-all">🏋️ 運動後</button>
+                            <button type="button" onclick="selectManualTag(this, '💊 服藥後')" class="manual-tag-btn px-3 py-1.5 rounded-xl text-xs font-semibold bg-slate-50 border border-slate-200 text-slate-600 hover:bg-slate-100 transition-all">💊 服藥後</button>
+                            <button type="button" onclick="selectManualTag(this, '⚠️ 感到不適')" class="manual-tag-btn px-3 py-1.5 rounded-xl text-xs font-semibold bg-slate-50 border border-slate-200 text-slate-600 hover:bg-slate-100 transition-all">⚠️ 感到不適</button>
                         </div>
                     </div>
 
                     <div>
                         <label class="block text-xs font-bold text-slate-500 mb-1">額外手動備註 (選填)</label>
-                        <input type="text" id="manual-notes" class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 outline-none text-sm transition-all-300" placeholder="如：稍微有些疲累">
+                        <input type="text" id="manual-notes" class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 outline-none text-sm transition-all" placeholder="如：稍微有些疲累">
                     </div>
 
-                    <button type="submit" class="w-full py-3.5 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold rounded-xl text-sm shadow-md transition-all-300 flex items-center justify-center gap-1.5">
+                    <button type="submit" class="w-full py-3.5 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl text-sm shadow-md transition-all flex items-center justify-center gap-1.5">
                         <i class="fa-solid fa-floppy-disk"></i>
                         儲存血壓紀錄
                     </button>
@@ -412,7 +408,7 @@
             </div>
         </div>
 
-        <!-- 醫學血壓標準參考指南 -->
+        <!-- 4. 醫學血壓標準參考指南 -->
         <div id="info-tab" class="tab-content hidden flex flex-col gap-6">
             <!-- 臨床脈壓差衛教 -->
             <div class="bg-white rounded-3xl p-6 shadow-sm border border-slate-200">
@@ -425,11 +421,11 @@
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-2">
                         <div class="p-3.5 bg-rose-50 border border-rose-100 rounded-xl space-y-1">
                             <p class="font-bold text-rose-700">🚨 脈壓差大於 60 mmHg (偏大)</p>
-                            <p class="text-rose-900/80">代表血管彈性可能偏低、硬化程度高、或主動脈瓣關閉不全，常見於中高齡或高強度阻力訓練過度者。應多留意心血管彈性與舒張期的供血量。</p>
+                            <p class="text-rose-900/80">代表血管彈性可能偏低、硬化程度高、或主動脈瓣關閉不全，常見於中高齡者。應多留意心血管彈性與舒張期的供血量。</p>
                         </div>
                         <div class="p-3.5 bg-blue-50 border border-blue-100 rounded-xl space-y-1">
                             <p class="font-bold text-blue-700">🚨 脈壓差小於 30 mmHg (偏小)</p>
-                            <p class="text-blue-900/80">代表心臟輸出量不夠強健、末梢血管阻力高，或伴隨脫水、低血容量、主動脈瓣狹窄等問題。常在長期疲勞、過度疲乏者中見到。</p>
+                            <p class="text-blue-900/80">代表心臟輸出量不夠強健、末梢血管阻力高，或伴隨脫水、低血容量等。常在長期疲勞、過度疲乏者中見到。</p>
                         </div>
                     </div>
                 </div>
@@ -488,10 +484,10 @@
 
     </main>
 
-    <!-- 雲端同步與個人 API 金鑰設定彈窗 -->
-    <div id="sync-modal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm hidden transition-all">
-        <div class="bg-white w-full max-w-md rounded-3xl p-6 shadow-2xl border border-slate-100 relative animate-in fade-in zoom-in-95 duration-200 overflow-y-auto max-h-[90vh]">
-            <button onclick="closeSyncModal()" class="absolute top-4 right-4 text-slate-400 hover:text-slate-600 w-8 h-8 rounded-full flex items-center justify-center transition-all-300">
+    <!-- Google Gemini API 金鑰 設定面板彈窗 -->
+    <div id="api-key-modal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm hidden transition-all">
+        <div class="bg-white w-full max-w-md rounded-3xl p-6 shadow-2xl border border-slate-100 relative animate-in fade-in zoom-in-95 duration-200">
+            <button onclick="closeApiKeyModal()" class="absolute top-4 right-4 text-slate-400 hover:text-slate-600 w-8 h-8 rounded-full flex items-center justify-center transition-all">
                 <i class="fa-solid fa-xmark text-lg"></i>
             </button>
             
@@ -500,53 +496,31 @@
                     <i class="fa-solid fa-key"></i>
                 </div>
                 <div>
-                    <h3 class="font-bold text-slate-900">個人金鑰與雲端設定</h3>
-                    <p class="text-xs text-slate-500">免註冊，一秒備份、共享您的健康檔案</p>
+                    <h3 class="font-bold text-slate-900">Google Gemini API 金鑰設定</h3>
+                    <p class="text-xs text-slate-500">輸入您的專屬 Key，即刻開啟 AI 拍照血壓識別</p>
                 </div>
             </div>
 
             <div class="space-y-4">
-                <!-- Google Gemini API 金鑰 -->
                 <div class="bg-indigo-50/50 p-4 rounded-2xl border border-indigo-100 space-y-2">
                     <label class="block text-xs font-bold text-indigo-900 flex items-center gap-1">
                         <i class="fa-solid fa-brain text-indigo-600"></i>
-                        🧠 Google Gemini API 金鑰 (拍照辨識用)：
+                        🧠 Google Gemini API 金鑰：
                     </label>
                     <div class="flex space-x-2">
-                        <input type="password" id="gemini-api-key" placeholder="貼上 AIzaSy 開頭的 API 金鑰" class="bg-white border border-indigo-250 rounded-xl px-3 py-2 text-xs font-mono font-semibold text-slate-700 outline-none flex-grow">
-                        <button onclick="saveGeminiApiKey()" class="px-3.5 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-semibold flex items-center gap-1 transition-all shrink-0">
-                            儲存金鑰
+                        <input type="password" id="gemini-api-key" placeholder="貼上 AIzaSy 開頭的 API 金鑰" class="bg-white border border-slate-200 rounded-xl px-3 py-2 text-xs font-mono font-semibold text-slate-700 outline-none flex-grow">
+                        <button onclick="saveGeminiApiKey()" class="px-3.5 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-bold flex items-center gap-1 transition-all shrink-0">
+                            儲存
                         </button>
                     </div>
-                    <p class="text-[10px] text-indigo-700/80 leading-relaxed">
-                        您需要一個 API 金鑰才能啟用免費 AI 拍照。請至 
+                    <p class="text-[10px] text-indigo-700/90 leading-relaxed">
+                        您需要一個 API 金鑰才能啟用 AI 拍照辨識。請至 
                         <a href="https://aistudio.google.com/" target="_blank" class="text-indigo-600 underline font-bold hover:text-indigo-800">Google AI Studio</a> 
-                        點擊 <b>Create API Key</b> 申請一組並貼入。
+                        點擊 <b>Create API Key</b> 申請一組完全免費的 Key 並在此貼入。
                     </p>
                 </div>
-
-                <div>
-                    <label class="block text-xs font-bold text-slate-500 mb-1.5">🔑 此裝置的同步金鑰：</label>
-                    <div class="flex space-x-2">
-                        <input type="text" id="device-sync-key" readonly class="bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs font-mono font-semibold text-slate-700 select-all outline-none flex-grow" placeholder="連接雲端後生成...">
-                        <button onclick="copySyncKey()" class="px-3.5 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-semibold flex items-center gap-1 transition-all">
-                            <i class="fa-solid fa-copy"></i>
-                            複製
-                        </button>
-                    </div>
-                    <p class="text-[10px] text-slate-400 mt-1">在您的另一台裝置（如電腦）輸入此金鑰，兩台裝置將共享同一個資料庫！</p>
-                </div>
-
-                <div class="border-t border-slate-100 pt-3">
-                    <label class="block text-xs font-bold text-slate-500 mb-1.5">🔗 連結至已有裝置的金鑰：</label>
-                    <div class="flex flex-col gap-2">
-                        <input type="text" id="target-sync-key" placeholder="請貼上另一台裝置的金鑰" class="border border-slate-200 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 outline-none rounded-xl px-3 py-2.5 text-xs font-mono">
-                        <button onclick="triggerConnectDevice()" class="w-full py-2.5 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-150 rounded-xl text-xs font-semibold flex items-center justify-center gap-1.5 transition-all">
-                            <i class="fa-solid fa-link"></i>
-                            開始綁定並同步
-                        </button>
-                    </div>
-                </div>
+                
+                <p class="text-[11px] text-slate-400">💡 金鑰會 100% 安全儲存在您個人的手機或電腦本機 (LocalStorage) 中，絕不會洩漏給第三方。</p>
             </div>
         </div>
     </div>
@@ -574,13 +548,11 @@
 
     <!-- UI與本地核心邏輯程式碼 -->
     <script>
-        window.isCloudConnected = false; 
         window.db = []; 
         window.activeTab = 'photo-tab';
         window.chartInstance = null;
         window.chartFilterCount = 7;
         window.stream = null; 
-        window.currentUserId = null;
 
         // 倒數自動存檔專用計時器
         let autoSaveInterval = null;
@@ -591,17 +563,13 @@
 
         window.confirmModalCallback = null;
 
-        window.cloudSaveHandler = null;
-        window.cloudDeleteHandler = null;
-        window.cloudClearHandler = null;
-
         // 預設模擬日誌
         const mockData = [
             { id: "mock-1", datetime: "2026-05-18T08:15", systolic: 118, diastolic: 78, pulse: 68, tag: "🌅 晨起", notes: "起床後測量", level: "正常血壓" },
-            { id: "mock-2", datetime: "2026-05-19T08:05", systolic: 122, diastolic: 79, pulse: 70, tag: "🌅 晨起", notes: "略感睡意", level: "血壓偏高" },
+            { id: "mock-2", datetime: "2026-05-19T08:05", systolic: 122, diastolic: 79, pulse: 70, tag: "🌅 晨起", notes: "略感疲累", level: "血壓偏高" },
             { id: "mock-3", datetime: "2026-05-20T21:30", systolic: 135, diastolic: 85, pulse: 74, tag: "🌙 睡前", notes: "剛散步回家", level: "高血壓一期" },
             { id: "mock-4", datetime: "2026-05-21T08:20", systolic: 119, diastolic: 76, pulse: 65, tag: "🌅 晨起", notes: "", level: "正常血壓" },
-            { id: "mock-5", datetime: "2026-05-22T08:10", systolic: 128, diastolic: 81, pulse: 71, tag: "🏋️ 運動後", notes: "訓練後半小時", level: "高血壓一期" }
+            { id: "mock-5", datetime: "2026-05-22T17:10", systolic: 128, diastolic: 81, pulse: 71, tag: "🏋️ 運動後", notes: "訓練後半小時", level: "高血壓一期" }
         ];
 
         window.addEventListener('load', () => {
@@ -631,9 +599,6 @@
             if (manualTimeInput) {
                 manualTimeInput.value = now.toISOString().slice(0, 16);
             }
-            
-            // 智感同步服務初始化
-            initSyncService();
         });
 
         // 儲存金鑰
@@ -647,6 +612,7 @@
             }
             localStorage.setItem('gemini_api_key', key);
             showToast("Gemini 辨識金鑰儲存成功！", "fa-circle-check", "text-emerald-500");
+            closeApiKeyModal();
         }
 
         // 頁籤切換
@@ -701,10 +667,10 @@
 
             if (isDanger) {
                 if (icon) icon.className = "fa-solid fa-triangle-exclamation text-rose-600";
-                if (okBtn) okBtn.className = "flex-1 py-2.5 bg-rose-600 hover:bg-rose-700 text-white font-semibold rounded-xl text-xs transition-all-300";
+                if (okBtn) okBtn.className = "flex-1 py-2.5 bg-rose-600 hover:bg-rose-700 text-white font-bold rounded-xl text-xs transition-all";
             } else {
                 if (icon) icon.className = "fa-solid fa-circle-question text-indigo-600";
-                if (okBtn) okBtn.className = "flex-1 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold rounded-xl text-xs transition-all-300";
+                if (okBtn) okBtn.className = "flex-1 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl text-xs transition-all";
             }
 
             window.confirmModalCallback = onConfirm;
@@ -736,28 +702,28 @@
             
             const siblingButtons = document.querySelectorAll('.context-tag-btn');
             siblingButtons.forEach(btn => {
-                btn.className = "context-tag-btn px-3 py-1.5 rounded-xl text-xs font-semibold bg-slate-50 border border-slate-200 text-slate-600 hover:bg-slate-100 transition-all-300";
+                btn.className = "context-tag-btn px-3 py-1.5 rounded-xl text-xs font-semibold bg-slate-50 border border-slate-200 text-slate-600 hover:bg-slate-100 transition-all";
             });
 
             if (currentSelectedTag === tagValue) {
                 currentSelectedTag = ''; // 取消選擇
             } else {
                 currentSelectedTag = tagValue;
-                btnElement.className = "context-tag-btn px-3 py-1.5 rounded-xl text-xs font-bold bg-indigo-600 border border-indigo-600 text-white shadow-md shadow-indigo-100 transition-all-300";
+                btnElement.className = "context-tag-btn px-3 py-1.5 rounded-xl text-xs font-bold bg-indigo-600 border border-indigo-600 text-white shadow-md shadow-indigo-100 transition-all";
             }
         }
 
         function selectManualTag(btnElement, tagValue) {
             const siblingButtons = document.querySelectorAll('.manual-tag-btn');
             siblingButtons.forEach(btn => {
-                btn.className = "manual-tag-btn px-3 py-1.5 rounded-xl text-xs font-semibold bg-slate-50 border border-slate-200 text-slate-600 hover:bg-slate-100 transition-all-300";
+                btn.className = "manual-tag-btn px-3 py-1.5 rounded-xl text-xs font-semibold bg-slate-50 border border-slate-200 text-slate-600 hover:bg-slate-100 transition-all";
             });
 
             if (currentSelectedManualTag === tagValue) {
                 currentSelectedManualTag = ''; // 取消
             } else {
                 currentSelectedManualTag = tagValue;
-                btnElement.className = "manual-tag-btn px-3 py-1.5 rounded-xl text-xs font-bold bg-indigo-600 border border-indigo-600 text-white shadow-md shadow-indigo-100 transition-all-300";
+                btnElement.className = "manual-tag-btn px-3 py-1.5 rounded-xl text-xs font-bold bg-indigo-600 border border-indigo-600 text-white shadow-md shadow-indigo-100 transition-all";
             }
         }
 
@@ -784,7 +750,7 @@
                 if (progressBar) progressBar.style.width = `${percentage}%`;
                 
                 if (statusText) {
-                    statusText.innerHTML = `<i class="fa-solid fa-circle-notch animate-spin text-[10px]"></i> <span>${Math.ceil(countdownSeconds)} 秒後閃電自動存檔...</span>`;
+                    statusText.innerHTML = `<i class="fa-solid fa-circle-notch animate-spin text-[10px]"></i> <span>${Math.ceil(countdownSeconds)} 秒後自動存檔...</span>`;
                 }
 
                 if (countdownSeconds <= 0) {
@@ -818,7 +784,7 @@
             startAutoSaveCountdown();
         }
 
-        // 當用戶編輯輸入框時，安全起見自動暫停倒數
+        // 當用戶編輯輸入框時，自動暫停倒數
         function handleOcrInputChange() {
             pauseCountdown();
             calculateRealtimeMetrics();
@@ -960,7 +926,7 @@
             currentSelectedTag = '';
             const tags = document.querySelectorAll('.context-tag-btn');
             tags.forEach(btn => {
-                btn.className = "context-tag-btn px-3 py-1.5 rounded-xl text-xs font-semibold bg-slate-50 border border-slate-200 text-slate-600 hover:bg-slate-100 transition-all-300";
+                btn.className = "context-tag-btn px-3 py-1.5 rounded-xl text-xs font-semibold bg-slate-50 border border-slate-200 text-slate-600 hover:bg-slate-100 transition-all";
             });
         }
 
@@ -1099,17 +1065,14 @@
                 level: levelInfo.name
             };
 
-            if (window.isCloudConnected && window.cloudSaveHandler) {
-                await window.cloudSaveHandler(newRecord);
-            } else {
-                window.db.unshift(newRecord);
-                localStorage.setItem('bp_logs', JSON.stringify(window.db));
-                updateStats();
-                renderHistoryList();
-                if (window.chartInstance) window.chartInstance.destroy();
-                initChart();
-                showToast("已安全儲存至本地健康日誌！", "fa-circle-check", "text-emerald-500");
-            }
+            window.db.unshift(newRecord);
+            localStorage.setItem('bp_logs', JSON.stringify(window.db));
+            
+            updateStats();
+            renderHistoryList();
+            if (window.chartInstance) window.chartInstance.destroy();
+            initChart();
+            showToast("已安全儲存至本地健康日誌！", "fa-circle-check", "text-emerald-500");
 
             resetUpload();
             setTimeout(() => switchTab('history-tab'), 500);
@@ -1154,17 +1117,14 @@
                 level: levelInfo.name
             };
 
-            if (window.isCloudConnected && window.cloudSaveHandler) {
-                await window.cloudSaveHandler(newRecord);
-            } else {
-                window.db.unshift(newRecord);
-                localStorage.setItem('bp_logs', JSON.stringify(window.db));
-                updateStats();
-                renderHistoryList();
-                if (window.chartInstance) window.chartInstance.destroy();
-                initChart();
-                showToast("血壓日誌儲存成功！", "fa-circle-check", "text-emerald-500");
-            }
+            window.db.unshift(newRecord);
+            localStorage.setItem('bp_logs', JSON.stringify(window.db));
+            
+            updateStats();
+            renderHistoryList();
+            if (window.chartInstance) window.chartInstance.destroy();
+            initChart();
+            showToast("血壓日誌儲存成功！", "fa-circle-check", "text-emerald-500");
 
             const manualForm = document.getElementById('manual-form');
             if (manualForm) manualForm.reset();
@@ -1172,7 +1132,7 @@
             // 重設手動標籤
             currentSelectedManualTag = '';
             document.querySelectorAll('.manual-tag-btn').forEach(btn => {
-                btn.className = "manual-tag-btn px-3 py-1.5 rounded-xl text-xs font-semibold bg-slate-50 border border-slate-200 text-slate-600 hover:bg-slate-100 transition-all-300";
+                btn.className = "manual-tag-btn px-3 py-1.5 rounded-xl text-xs font-semibold bg-slate-50 border border-slate-200 text-slate-600 hover:bg-slate-100 transition-all";
             });
 
             const now = new Date();
@@ -1184,17 +1144,13 @@
 
         function deleteRecord(id) {
             showCustomConfirm("確定要刪除此筆記錄？", "刪除後此數值將無法復原。", true, async () => {
-                if (window.isCloudConnected && window.cloudDeleteHandler) {
-                    await window.cloudDeleteHandler(id);
-                } else {
-                    window.db = window.db.filter(rec => rec.id !== id);
-                    localStorage.setItem('bp_logs', JSON.stringify(window.db));
-                    updateStats();
-                    renderHistoryList();
-                    if (window.chartInstance) window.chartInstance.destroy();
-                    initChart();
-                    showToast("已成功移出您的日誌", "fa-trash-can", "text-rose-500");
-                }
+                window.db = window.db.filter(rec => rec.id !== id);
+                localStorage.setItem('bp_logs', JSON.stringify(window.db));
+                updateStats();
+                renderHistoryList();
+                if (window.chartInstance) window.chartInstance.destroy();
+                initChart();
+                showToast("已成功移出您的日誌", "fa-trash-can", "text-rose-500");
             });
         }
 
@@ -1204,17 +1160,13 @@
                 `此動作將不可逆地抹除您的所有歷史血壓測量日誌！`, 
                 true, 
                 async () => {
-                    if (window.isCloudConnected && window.cloudClearHandler) {
-                        await window.cloudClearHandler();
-                    } else {
-                        window.db = [];
-                        localStorage.setItem('bp_logs', JSON.stringify(window.db));
-                        updateStats();
-                        renderHistoryList();
-                        if (window.chartInstance) window.chartInstance.destroy();
-                        initChart();
-                        showToast(`歷史紀錄已全數清空`, "fa-dumpster", "text-rose-500");
-                    }
+                    window.db = [];
+                    localStorage.setItem('bp_logs', JSON.stringify(window.db));
+                    updateStats();
+                    renderHistoryList();
+                    if (window.chartInstance) window.chartInstance.destroy();
+                    initChart();
+                    showToast(`歷史紀錄已全數清空`, "fa-dumpster", "text-rose-500");
                 }
             );
         }
@@ -1270,7 +1222,7 @@
             pulseEl.innerHTML = `${Math.round(sumPul / window.db.length)} <span class="text-xs text-slate-400 font-normal">bpm</span>`;
         }
 
-        // ==================== 高質感去噪卡片流歷史日誌渲染 ====================
+        // ==================== 高質感高整合度、緊湊型一體化卡片日誌 ====================
         function renderHistoryList() {
             const listEl = document.getElementById('history-list');
             const noDataEl = document.getElementById('no-data-msg');
@@ -1292,75 +1244,77 @@
                 
                 const levelInfo = getBpLevel(rec.systolic, rec.diastolic);
                 
-                // 脈壓差計算
+                // 脈壓差
                 const pp = rec.systolic - rec.diastolic;
                 let ppWarningHtml = '';
                 if (pp > 60) {
-                    ppWarningHtml = `<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-rose-50 text-rose-600 text-[10px] font-semibold border border-rose-100">脈壓差偏大: ${pp}</span>`;
+                    ppWarningHtml = `<span class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-rose-50 text-rose-600 text-[10px] font-semibold border border-rose-100 shrink-0">脈壓差偏大: ${pp}</span>`;
                 } else if (pp < 30) {
-                    ppWarningHtml = `<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-blue-50 text-blue-600 text-[10px] font-semibold border border-blue-100">脈壓差偏小: ${pp}</span>`;
+                    ppWarningHtml = `<span class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-blue-50 text-blue-600 text-[10px] font-semibold border border-blue-100 shrink-0">脈壓差偏小: ${pp}</span>`;
                 } else {
-                    ppWarningHtml = `<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-slate-50 text-slate-500 text-[10px] font-medium border border-slate-200/60">脈壓差: ${pp}</span>`;
+                    ppWarningHtml = `<span class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-slate-50 text-slate-500 text-[10px] font-medium border border-slate-200/60 shrink-0">PP: ${pp}</span>`;
                 }
 
-                // 生理狀態氣泡
+                // 生理標籤氣泡
                 const tagBadge = rec.tag 
-                    ? `<span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-indigo-50 border border-indigo-150 text-indigo-700 text-[10px] font-bold"><i class="fa-solid fa-tags text-[9px]"></i> ${rec.tag}</span>`
+                    ? `<span class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-indigo-50 border border-indigo-150 text-indigo-700 text-[10px] font-bold shrink-0"><i class="fa-solid fa-tags text-[9px]"></i> ${rec.tag}</span>`
                     : '';
 
-                // 其他手打備註 虛線微卡片
-                const customNoteBubble = rec.notes 
-                    ? `<div class="mt-2 text-xs font-medium text-slate-600 bg-slate-50/60 border border-dashed border-slate-200 rounded-xl px-3 py-1.5 inline-flex items-center gap-1.5">
-                         <i class="fa-regular fa-comment-dots text-slate-400"></i>
+                // 自訂備註以極簡的灰色膠囊標籤緊跟，不換行
+                const customNoteHtml = rec.notes 
+                    ? `<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-slate-100 text-slate-600 text-[10px] font-medium max-w-[140px] sm:max-w-xs truncate border border-slate-200/60" title="${rec.notes}">
+                         <i class="fa-regular fa-comment text-slate-400 text-[9px]"></i>
                          <span>${rec.notes}</span>
-                       </div>`
+                       </span>`
                     : '';
 
+                // 高度緊湊的單列大白卡，去除垂直贅餘空間
                 const card = document.createElement('div');
-                card.className = "bg-white rounded-2xl p-5 border border-slate-100 hover:border-slate-200 hover:shadow-md hover:shadow-slate-100/50 transition-all duration-300 relative group flex flex-col md:flex-row md:items-center justify-between gap-4";
+                card.className = "bg-white rounded-xl px-4 py-2.5 border border-slate-100 hover:border-slate-200/80 hover:shadow-sm hover:shadow-slate-100/50 transition-all duration-200 flex flex-col sm:flex-row sm:items-center justify-between gap-2.5";
                 card.innerHTML = `
-                    <div class="flex items-start space-x-4">
-                        <div class="flex flex-col">
-                            <!-- 數值高亮 -->
-                            <div class="flex items-baseline space-x-1.5">
-                                <span class="text-2xl font-black text-rose-500 tracking-tight">${rec.systolic}</span>
-                                <span class="text-slate-300 font-semibold text-lg">/</span>
-                                <span class="text-2xl font-black text-blue-500 tracking-tight">${rec.diastolic}</span>
-                                <span class="text-[10px] text-slate-400 font-bold uppercase tracking-wider ml-1">mmHg</span>
+                    <div class="flex items-center gap-4 flex-grow min-w-0">
+                        <!-- 測量時間 (更精緻緊湊) -->
+                        <div class="shrink-0 text-slate-400 font-semibold text-[10px] leading-tight sm:w-16">
+                            <span class="block sm:inline-block">${formatTime.split(' ')[0]}</span>
+                            <span class="block text-slate-400/80 font-normal sm:ml-1 text-[9px]">${formatTime.split(' ')[1]}</span>
+                        </div>
+
+                        <!-- 核心數值 & 心率 (橫向整合) -->
+                        <div class="flex items-center gap-3.5 flex-grow min-w-0">
+                            <!-- 收縮/舒張壓 -->
+                            <div class="flex items-baseline gap-1 shrink-0">
+                                <span class="text-xl font-black text-rose-500 tracking-tight leading-none">${rec.systolic}</span>
+                                <span class="text-slate-300 font-bold text-sm">/</span>
+                                <span class="text-xl font-black text-blue-500 tracking-tight leading-none">${rec.diastolic}</span>
+                                <span class="text-[9px] text-slate-400 font-bold uppercase tracking-wider ml-1 hidden sm:inline-block">mmHg</span>
                             </div>
-                            
-                            <!-- 測量時間、脈壓差與生理標籤 -->
-                            <div class="flex items-center gap-2 mt-1.5 flex-wrap">
-                                <span class="text-xs text-slate-400 font-semibold">${formatTime}</span>
+
+                            <!-- 翠綠脈搏 -->
+                            <div class="flex items-center gap-1 shrink-0 px-2 py-0.5 bg-emerald-50 border border-emerald-100 text-emerald-600 rounded-full font-bold text-[11px] leading-none">
+                                <i class="fa-solid fa-heart animate-pulse text-emerald-500"></i>
+                                <span>${rec.pulse}</span>
+                            </div>
+
+                            <!-- 狀態與備註 (橫排一列) -->
+                            <div class="flex items-center gap-1.5 min-w-0 flex-wrap">
                                 ${ppWarningHtml}
                                 ${tagBadge}
+                                ${customNoteHtml}
                             </div>
-                            
-                            <!-- 自訂備註 -->
-                            ${customNoteBubble}
                         </div>
                     </div>
 
-                    <!-- 右側：心率、醫學判定、刪除鈕 -->
-                    <div class="flex items-center justify-between md:justify-end gap-4 border-t border-slate-50 pt-3 md:pt-0 md:border-none">
-                        <div class="flex items-center space-x-3">
-                            <!-- 心搏率 -->
-                            <div class="flex items-center space-x-1 bg-emerald-50 border border-emerald-100 rounded-full px-3 py-1">
-                                <i class="fa-solid fa-heart animate-pulse text-emerald-500 text-xs"></i>
-                                <span class="text-sm font-bold text-emerald-600">${rec.pulse}</span>
-                                <span class="text-[9px] text-emerald-400 font-semibold">bpm</span>
-                            </div>
-                            
-                            <!-- ISH 判定標籤 -->
-                            <span class="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-bold border ${levelInfo.style}">
-                                <i class="fa-solid ${levelInfo.icon} text-[10px]"></i>
-                                ${levelInfo.name}
-                            </span>
-                        </div>
+                    <!-- 右側控制區 (血壓醫學分級、刪除按鈕) -->
+                    <div class="flex items-center justify-between sm:justify-end gap-3 shrink-0 pt-2 sm:pt-0 border-t border-slate-50 sm:border-none">
+                        <!-- 精巧版 ISH 膠囊標籤 -->
+                        <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold border shrink-0 ${levelInfo.style}">
+                            <i class="fa-solid ${levelInfo.icon} text-[9px]"></i>
+                            ${levelInfo.name}
+                        </span>
                         
-                        <!-- 刪除按鈕 -->
-                        <button class="delete-btn text-slate-300 hover:text-rose-500 hover:bg-rose-50 p-2 rounded-xl transition-all duration-200" data-id="${rec.id}" title="刪除此筆">
-                            <i class="fa-solid fa-trash-can text-sm"></i>
+                        <!-- 刪除 -->
+                        <button class="delete-btn text-slate-300 hover:text-rose-500 hover:bg-rose-50 p-1.5 rounded-lg transition-all" data-id="${rec.id}" title="刪除此筆">
+                            <i class="fa-solid fa-trash-can text-xs"></i>
                         </button>
                     </div>
                 `;
@@ -1381,13 +1335,13 @@
 
             if (filter7) {
                 filter7.className = num === 7 
-                    ? "px-3 py-1 bg-indigo-50 text-indigo-600 font-semibold rounded-lg text-xs transition-all-300"
-                    : "px-3 py-1 text-slate-600 font-semibold rounded-lg text-xs hover:bg-slate-50 transition-all-300";
+                    ? "px-3 py-1 bg-indigo-50 text-indigo-600 font-bold rounded-lg text-xs transition-all"
+                    : "px-3 py-1 text-slate-600 font-semibold rounded-lg text-xs hover:bg-slate-50 transition-all";
             }
             if (filter30) {
                 filter30.className = num === 30 
-                    ? "px-3 py-1 bg-indigo-50 text-indigo-600 font-semibold rounded-lg text-xs transition-all-300"
-                    : "px-3 py-1 text-slate-600 font-semibold rounded-lg text-xs hover:bg-slate-50 transition-all-300";
+                    ? "px-3 py-1 bg-indigo-50 text-indigo-600 font-bold rounded-lg text-xs transition-all"
+                    : "px-3 py-1 text-slate-600 font-semibold rounded-lg text-xs hover:bg-slate-50 transition-all";
             }
             
             if (window.chartInstance) {
@@ -1480,198 +1434,15 @@
             });
         }
 
-        // ==================== 智感雙軌雲端同步與金鑰服務 ====================
-        function initSyncService() {
-            let syncKey = localStorage.getItem('bp_custom_sync_uid');
-            if (!syncKey) {
-                // 自動生成一組好記的 10 碼隨機大寫同步金鑰
-                syncKey = 'BP-' + Math.random().toString(36).substr(2, 4).toUpperCase() + '-' + Math.random().toString(36).substr(2, 4).toUpperCase();
-                localStorage.setItem('bp_custom_sync_uid', syncKey);
-            }
-            
-            const syncInput = document.getElementById('device-sync-key');
-            if (syncInput) {
-                syncInput.value = syncKey;
-            }
-            
-            window.currentUserId = syncKey;
-            
-            // 如果 Firebase 尚未初始化（如部署在普通 GitHub Pages 靜態伺服器上），自動啟用 Fallback 公用雲端
-            if (!window.isCloudConnected) {
-                startFallbackSync(syncKey);
-            }
-        }
-
-        let fallbackSyncInterval = null;
-        let lastSyncJson = '';
-
-        async function startFallbackSync(syncKey) {
-            clearInterval(fallbackSyncInterval);
-            
-            const syncStatusEl = document.getElementById('sync-status');
-            if (syncStatusEl) {
-                syncStatusEl.innerHTML = `<span class="w-2 h-2 bg-indigo-500 rounded-full mr-1 inline-block animate-pulse"></span> 雲端載入中...`;
-            }
-
-            // 初次雙向合併與下載
-            await fetchFallbackCloudData(syncKey);
-
-            // 每 8 秒雙向同步檢測，達到秒級跨裝置自動同步
-            fallbackSyncInterval = setInterval(() => {
-                fetchFallbackCloudData(syncKey, true);
-            }, 8000);
-
-            // 重寫操作介面，直接對接 Fallback 雲端 API
-            window.cloudSaveHandler = async (newRecord) => {
-                window.db.unshift(newRecord);
-                localStorage.setItem('bp_logs', JSON.stringify(window.db));
-                await pushFallbackCloudData(syncKey);
-                updateStats();
-                renderHistoryList();
-                if (window.chartInstance) window.chartInstance.destroy();
-                initChart();
-                showToast("雲端與本地已同步存檔！", "fa-circle-check", "text-emerald-500");
-            };
-
-            window.cloudDeleteHandler = async (id) => {
-                window.db = window.db.filter(rec => rec.id !== id);
-                localStorage.setItem('bp_logs', JSON.stringify(window.db));
-                await pushFallbackCloudData(syncKey);
-                updateStats();
-                renderHistoryList();
-                if (window.chartInstance) window.chartInstance.destroy();
-                initChart();
-                showToast("已從雲端與本地同步刪除", "fa-trash-can", "text-rose-500");
-            };
-
-            window.cloudClearHandler = async () => {
-                window.db = [];
-                localStorage.setItem('bp_logs', JSON.stringify(window.db));
-                await pushFallbackCloudData(syncKey);
-                updateStats();
-                renderHistoryList();
-                if (window.chartInstance) window.chartInstance.destroy();
-                initChart();
-                showToast("歷史紀錄已全數從雲端清空", "fa-dumpster", "text-rose-500");
-            };
-        }
-
-        async function fetchFallbackCloudData(syncKey, isPolling = false) {
-            try {
-                const res = await fetch(`https://kvdb.io/bp_cam_v1_sync/${syncKey}`);
-                if (res.status === 200) {
-                    const cloudDb = await res.json();
-                    const cloudJson = JSON.stringify(cloudDb);
-                    
-                    if (cloudJson !== lastSyncJson) {
-                        lastSyncJson = cloudJson;
-                        window.db = cloudDb;
-                        localStorage.setItem('bp_logs', cloudJson);
-                        
-                        // 刷新 UI
-                        updateStats();
-                        renderHistoryList();
-                        if (window.chartInstance) window.chartInstance.destroy();
-                        initChart();
-                        
-                        if (isPolling) {
-                            showToast("偵測到跨裝置更新，已自動秒級同步！", "fa-arrows-rotate", "text-indigo-500");
-                        }
-                    }
-                    
-                    const syncStatusEl = document.getElementById('sync-status');
-                    if (syncStatusEl) {
-                        syncStatusEl.innerHTML = `<span class="w-2 h-2 bg-emerald-500 rounded-full mr-1 inline-block"></span> 實時雲端已備份`;
-                    }
-                } else if (res.status === 404) {
-                    // 雲端尚無此金鑰紀錄，進行初次備份上傳
-                    await pushFallbackCloudData(syncKey);
-                }
-            } catch (err) {
-                console.warn("雲端拉取異常，自動改以本地快取模式運作:", err);
-                const syncStatusEl = document.getElementById('sync-status');
-                if (syncStatusEl) {
-                    syncStatusEl.innerHTML = `<span class="w-2 h-2 bg-amber-500 rounded-full mr-1 inline-block"></span> 離線本地模式`;
-                }
-            }
-        }
-
-        async function pushFallbackCloudData(syncKey) {
-            try {
-                const cloudJson = JSON.stringify(window.db);
-                lastSyncJson = cloudJson;
-                
-                await fetch(`https://kvdb.io/bp_cam_v1_sync/${syncKey}`, {
-                    method: 'POST',
-                    body: cloudJson,
-                    headers: { 'Content-Type': 'application/json' }
-                });
-                
-                const syncStatusEl = document.getElementById('sync-status');
-                if (syncStatusEl) {
-                    syncStatusEl.innerHTML = `<span class="w-2 h-2 bg-emerald-500 rounded-full mr-1 inline-block"></span> 實時雲端已備份`;
-                }
-            } catch (err) {
-                console.error("雲端備份上傳失敗:", err);
-            }
-        }
-
-        function openSyncModal() {
-            const modal = document.getElementById('sync-modal');
+        // ==================== 彈窗控制 ====================
+        function openApiKeyModal() {
+            const modal = document.getElementById('api-key-modal');
             if (modal) modal.classList.remove('hidden');
         }
 
-        function closeSyncModal() {
-            const modal = document.getElementById('sync-modal');
+        function closeApiKeyModal() {
+            const modal = document.getElementById('api-key-modal');
             if (modal) modal.classList.add('hidden');
-        }
-
-        function copySyncKey() {
-            const keyInput = document.getElementById('device-sync-key');
-            if (!keyInput || !keyInput.value) {
-                showToast("同步金鑰未生成！", "fa-triangle-exclamation", "text-amber-500");
-                return;
-            }
-            keyInput.select();
-            document.execCommand('copy');
-            showToast("金鑰已成功複製！", "fa-circle-check", "text-emerald-400");
-        }
-
-        function triggerConnectDevice() {
-            const targetInput = document.getElementById('target-sync-key');
-            if (!targetInput) return;
-            const targetKey = targetInput.value.trim();
-            if (!targetKey) {
-                showToast("請貼上對應金鑰！", "fa-triangle-exclamation", "text-amber-500");
-                return;
-            }
-
-            showCustomConfirm(
-                "是否確定對接此同步金鑰？", 
-                "對接後，本機數據將會被該金鑰對應的雲端資料庫覆蓋，兩裝置資料將無縫互通。", 
-                false, 
-                () => {
-                    localStorage.setItem('bp_custom_sync_uid', targetKey);
-                    window.currentUserId = targetKey;
-                    
-                    const syncInput = document.getElementById('device-sync-key');
-                    if (syncInput) syncInput.value = targetKey;
-                    
-                    closeSyncModal();
-                    
-                    const syncStatusEl = document.getElementById('sync-status');
-                    if (syncStatusEl) {
-                        syncStatusEl.innerHTML = `<span class="w-2 h-2 bg-indigo-500 rounded-full mr-1 animate-pulse inline-block"></span> 連線中...`;
-                    }
-                    
-                    if (window.isCloudConnected && window.reconnectCloudService) {
-                        window.reconnectCloudService();
-                    } else {
-                        startFallbackSync(targetKey);
-                    }
-                    showToast("金鑰對接成功，實時雲端已建立！", "fa-link", "text-emerald-500");
-                }
-            );
         }
 
         function showToast(message, iconClass = "fa-circle-check", iconColorClass = "text-emerald-400") {
@@ -1694,303 +1465,168 @@
         }
     </script>
 
-    <!-- Firebase 實時備份（僅在特定自定義環境下載入，普通託管將無縫使用 KVdb Fallback） -->
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, doc, setDoc, deleteDoc, onSnapshot, collection } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+    <!-- Gemini 2.5 Flash 圖像辨識核心（純本地對接，安全、乾淨、無 Firebase 干擾） -->
+    <script>
+        window.triggerGeminiOcr = async (base64Data) => {
+            const resultCard = document.getElementById('result-card');
+            const analyzingState = document.getElementById('analyzing-state');
 
-        if (window.location.protocol !== 'file:') {
-            const appId = typeof __app_id !== 'undefined' ? __app_id : 'blood-pressure-photo-sync';
-            const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : {
-                apiKey: "",
-                authDomain: "default-bp-app.firebaseapp.com",
-                projectId: "default-bp-app"
-            };
-
-            try {
-                if (firebaseConfig.apiKey && firebaseConfig.apiKey !== "") {
-                    const app = initializeApp(firebaseConfig);
-                    const auth = getAuth(app);
-                    const firestoreDb = getFirestore(app);
-                    let unsubscribeLogs = null;
-
-                    const initAuth = async () => {
-                        const syncStatusEl = document.getElementById('sync-status');
-                        if (syncStatusEl) {
-                            syncStatusEl.innerText = "☁️ 雲端同步加載中...";
-                        }
-                        try {
-                            if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
-                                await signInWithCustomToken(auth, __initial_auth_token);
-                            } else {
-                                await signInAnonymously(auth);
-                            }
-                        } catch (err) {
-                            console.warn("自定義憑證載入失敗，採用匿名連線模式", err);
-                            await signInAnonymously(auth);
-                        }
-                    };
-
-                    initAuth();
-
-                    onAuthStateChanged(auth, (user) => {
-                        if (user) {
-                            const linkedUid = localStorage.getItem('bp_custom_sync_uid');
-                            window.currentUserId = linkedUid || user.uid;
-                            const keyInput = document.getElementById('device-sync-key');
-                            if (keyInput) keyInput.value = user.uid;
-                            window.isCloudConnected = true;
-                            startCloudSync(user.uid);
-                        }
-                    });
-
-                    const startCloudSync = (nativeUid) => {
-                        if (unsubscribeLogs) unsubscribeLogs();
-                        const activeUid = window.currentUserId || nativeUid;
-                        const bpCollectionRef = collection(firestoreDb, 'artifacts', appId, 'users', activeUid, 'bp_logs');
-
-                        const localRaw = localStorage.getItem('bp_logs');
-                        if (localRaw) {
-                            try {
-                                const localItems = JSON.parse(localRaw);
-                                if (localItems && localItems.length > 0) {
-                                    localItems.forEach(async (item) => {
-                                        const docId = item.id || 'rec-' + Date.now() + Math.random().toString(36).substr(2, 5);
-                                        await setDoc(doc(firestoreDb, 'artifacts', appId, 'users', activeUid, 'bp_logs', docId), item);
-                                    });
-                                    localStorage.removeItem('bp_logs');
-                                }
-                            } catch (e) {
-                                console.error("資料遷移錯誤:", e);
-                            }
-                        }
-
-                        unsubscribeLogs = onSnapshot(bpCollectionRef, (querySnapshot) => {
-                            const cloudItems = [];
-                            querySnapshot.forEach((doc) => {
-                                cloudItems.push({ ...doc.data(), id: doc.id });
-                            });
-
-                            if (cloudItems.length === 0) {
-                                mockData.forEach(async (mock) => {
-                                    await setDoc(doc(firestoreDb, 'artifacts', appId, 'users', activeUid, 'bp_logs', mock.id), mock);
-                                });
-                                return;
-                            }
-
-                            window.db = cloudItems.sort((a, b) => new Date(b.datetime) - new Date(a.datetime));
-
-                            window.updateStats();
-                            window.renderHistoryList();
-                            if (window.chartInstance) window.chartInstance.destroy();
-                            window.initChart();
-
-                            const syncStatusEl = document.getElementById('sync-status');
-                            if (syncStatusEl) {
-                                syncStatusEl.innerHTML = `<span class="w-2 h-2 bg-emerald-500 rounded-full mr-1 inline-block animate-pulse"></span> 實時雲端已備份`;
-                            }
-                        }, (err) => {
-                            console.error("雲端同步異常：", err);
-                            const syncStatusEl = document.getElementById('sync-status');
-                            if (syncStatusEl) syncStatusEl.innerText = "⚠️ 雲端連線異常";
-                        });
-                    };
-
-                    window.cloudSaveHandler = async (newRecord) => {
-                        const targetUid = window.currentUserId || auth.currentUser?.uid;
-                        if (!targetUid) return;
-                        try {
-                            await setDoc(doc(firestoreDb, 'artifacts', appId, 'users', targetUid, 'bp_logs', newRecord.id), newRecord);
-                            window.showToast("已同步上傳至雲端！", "fa-circle-check", "text-emerald-500");
-                        } catch (err) {
-                            console.error("備份失敗:", err);
-                        }
-                    };
-
-                    window.cloudDeleteHandler = async (id) => {
-                        const targetUid = window.currentUserId || auth.currentUser?.uid;
-                        if (!targetUid) return;
-                        try {
-                            await deleteDoc(doc(firestoreDb, 'artifacts', appId, 'users', targetUid, 'bp_logs', id));
-                            window.showToast("數據已自雲端與本機同步刪除", "fa-trash-can", "text-rose-500");
-                        } catch (err) {
-                            console.error("刪除失敗", err);
-                        }
-                    };
-
-                    window.cloudClearHandler = async () => {
-                        const targetUid = window.currentUserId || auth.currentUser?.uid;
-                        if (!targetUid) return;
-                        try {
-                            for (const item of window.db) {
-                                await deleteDoc(doc(firestoreDb, 'artifacts', appId, 'users', targetUid, 'bp_logs', item.id));
-                            }
-                            window.showToast(`您的所有雲端數據已清空`, "fa-trash", "text-rose-500");
-                        } catch (err) {
-                            console.error("清除失敗", err);
-                        }
-                    };
-
-                    window.reconnectCloudService = () => {
-                        if (auth.currentUser) {
-                            startCloudSync(auth.currentUser.uid);
-                        }
-                    };
-                }
-            } catch (err) {
-                console.error("Firebase 載入異常", err);
-            }
-
-            // ==================== Gemini 2.5 Flash 圖像辨識核心 ====================
-            window.triggerGeminiOcr = async (base64Data) => {
-                const resultCard = document.getElementById('result-card');
-                const analyzingState = document.getElementById('analyzing-state');
-
-                if (resultCard) resultCard.classList.add('hidden');
+            if (resultCard) resultCard.classList.add('hidden');
+            
+            const apiKey = localStorage.getItem('gemini_api_key') || "";
+            
+            if (!apiKey) {
+                window.showToast("請點選右上角『API金鑰』輸入您的 Google AI Studio 金鑰！", "fa-key", "text-amber-500");
                 
-                const apiKey = localStorage.getItem('gemini_api_key') || "";
-                
-                if (!apiKey) {
-                    window.showToast("請點選右上角『雲端同步』設定您的 API 金鑰！", "fa-key", "text-amber-500");
-                    
-                    const sysEl = document.getElementById('ocr-systolic');
-                    const diaEl = document.getElementById('ocr-diastolic');
-                    const pulseEl = document.getElementById('ocr-pulse');
-                    const notesEl = document.getElementById('ocr-notes');
-                    
-                    if (sysEl) sysEl.value = '';
-                    if (diaEl) diaEl.value = '';
-                    if (pulseEl) pulseEl.value = '';
-                    if (notesEl) {
-                        notesEl.innerText = '您尚未設定金鑰。請至右上角貼上您的 Gemini API Key 後再試。現在您可以先在下方手動核對數值並存檔。';
-                    }
-                    
-                    if (resultCard) {
-                        resultCard.classList.remove('hidden');
-                        resultCard.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-                        calculateRealtimeMetrics();
-                    }
-                    return;
-                }
-
-                if (analyzingState) {
-                    analyzingState.classList.remove('hidden');
-                    analyzingState.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-                }
-
-                const pureBase64 = base64Data.split(',')[1];
-                const prompt = `您是一位精密的醫療器材與數值辨識 OCR 專家。請幫我辨識這張血壓計畫面中的三個數據：
-                1. 收縮壓 (Systolic / SYS / 高壓)
-                2. 舒張壓 (Diastolic / DIA / 低壓)
-                3. 脈搏 (Pulse / 心跳)
-                
-                請嚴格用 JSON 結構回傳這三個數字。如果畫面模糊不清、反光嚴重無法看清，請將 success 設定為 false。`;
-
-                const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`;
-
-                const payload = {
-                    contents: [{
-                        role: "user",
-                        parts: [
-                            { text: prompt },
-                            {
-                                inlineData: {
-                                    mimeType: "image/jpeg",
-                                    data: pureBase64
-                                }
-                            }
-                        ]
-                    }],
-                    generationConfig: {
-                        responseMimeType: "application/json",
-                        responseSchema: {
-                            type: "OBJECT",
-                            properties: {
-                                systolic: { type: "INTEGER", description: "Systolic blood pressure (SYS) as integer" },
-                                diastolic: { type: "INTEGER", description: "Diastolic blood pressure (DIA) as integer" },
-                                pulse: { type: "INTEGER", description: "Pulse rate" },
-                                success: { type: "BOOLEAN", description: "True if readable digits were found" },
-                                confidence_explanation: { type: "STRING", description: "Brief details or hint" }
-                            },
-                            required: ["systolic", "diastolic", "pulse", "success"]
-                        }
-                    }
-                };
-
-                let attempts = 0;
-                const maxAttempts = 2;
-                let successResponse = false;
-                let resultJson = null;
-
-                while (attempts < maxAttempts && !successResponse) {
-                    try {
-                        const response = await fetch(apiUrl, {
-                            method: 'POST',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify(payload)
-                        });
-
-                        if (!response.ok) throw new Error(`HTTP ${response.status}`);
-                        const result = await response.json();
-                        const jsonText = result?.candidates?.[0]?.content?.parts?.[0]?.text;
-                        
-                        if (jsonText) {
-                            resultJson = JSON.parse(jsonText);
-                            successResponse = true;
-                        } else {
-                            throw new Error("格式異常");
-                        }
-                    } catch (err) {
-                        attempts++;
-                        if (attempts >= maxAttempts) break;
-                        await new Promise(resolve => setTimeout(resolve, 1500));
-                    }
-                }
-
-                if (analyzingState) analyzingState.classList.add('hidden');
-
                 const sysEl = document.getElementById('ocr-systolic');
                 const diaEl = document.getElementById('ocr-diastolic');
                 const pulseEl = document.getElementById('ocr-pulse');
                 const notesEl = document.getElementById('ocr-notes');
+                
+                if (sysEl) sysEl.value = '';
+                if (diaEl) diaEl.value = '';
+                if (pulseEl) pulseEl.value = '';
+                if (notesEl) {
+                    notesEl.innerText = '您尚未設定金鑰。請至右上角貼上您的 Gemini API Key 後再試。現在您可以先在下方手動核對數值並存檔。';
+                }
+                
+                if (resultCard) {
+                    resultCard.classList.remove('hidden');
+                    resultCard.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                    calculateRealtimeMetrics();
+                }
+                return;
+            }
 
-                if (successResponse && resultJson && resultJson.success) {
-                    if (sysEl) sysEl.value = resultJson.systolic || '';
-                    if (diaEl) diaEl.value = resultJson.diastolic || '';
-                    if (pulseEl) pulseEl.value = resultJson.pulse || '';
-                    if (notesEl) {
-                        notesEl.innerText = (resultJson.confidence_explanation || '照片辨識成功。');
-                    }
-                    
-                    if (resultCard) {
-                        resultCard.classList.remove('hidden');
-                        resultCard.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-                        calculateRealtimeMetrics(); // 即時計算脈壓與判定
-                    }
-                    
-                    window.showToast("自動辨識成功！倒數自動存檔中...", "fa-circle-check", "text-indigo-500");
-                    
-                    // 啟用「5 秒閃電自動存檔計時器」
-                    startAutoSaveCountdown();
-                    
-                } else {
-                    window.showToast("無法辨識數據！請手動確認或調整拍照角度。", "fa-circle-exclamation", "text-rose-500");
-                    if (sysEl) sysEl.value = '';
-                    if (diaEl) diaEl.value = '';
-                    if (pulseEl) pulseEl.value = '';
-                    if (notesEl) {
-                        notesEl.innerText = '未在照片中偵測到清晰數字。您可以在下方直接輸入。';
-                    }
-                    
-                    if (resultCard) {
-                        resultCard.classList.remove('hidden');
-                        resultCard.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-                        calculateRealtimeMetrics();
+            if (analyzingState) {
+                analyzingState.classList.remove('hidden');
+                analyzingState.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+            }
+
+            const pureBase64 = base64Data.split(',')[1];
+            const prompt = `您是一位精密的醫療器材與數值辨識 OCR 專家。請幫我辨識這張血壓計畫面中的三個數據：
+            1. 收縮壓 (Systolic / SYS / 高壓)
+            2. 舒張壓 (Diastolic / DIA / 低壓)
+            3. 脈搏 (Pulse / 心跳)
+            
+            請嚴格用 JSON 結構回傳這三個數字。如果畫面模糊不清、反光嚴重無法看清，請將 success 設定為 false。`;
+
+            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`;
+
+            const payload = {
+                contents: [{
+                    role: "user",
+                    parts: [
+                        { text: prompt },
+                        {
+                            inlineData: {
+                                mimeType: "image/jpeg",
+                                data: pureBase64
+                            }
+                        }
+                    ]
+                }],
+                generationConfig: {
+                    responseMimeType: "application/json",
+                    responseSchema: {
+                        type: "OBJECT",
+                        properties: {
+                            systolic: { type: "INTEGER", description: "Systolic blood pressure (SYS) as integer" },
+                            diastolic: { type: "INTEGER", description: "Diastolic blood pressure (DIA) as integer" },
+                            pulse: { type: "INTEGER", description: "Pulse rate" },
+                            success: { type: "BOOLEAN", description: "True if readable digits were found" },
+                            confidence_explanation: { type: "STRING", description: "Brief details or hint" }
+                        },
+                        required: ["systolic", "diastolic", "pulse", "success"]
                     }
                 }
             };
-        }
+
+            let attempts = 0;
+            const maxAttempts = 2;
+            let successResponse = false;
+            let resultJson = null;
+
+            while (attempts < maxAttempts && !successResponse) {
+                try {
+                    const response = await fetch(apiUrl, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(payload)
+                    });
+
+                    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+                    const result = await response.json();
+                    const jsonText = result?.candidates?.[0]?.content?.parts?.[0]?.text;
+                    
+                    if (jsonText) {
+                        resultJson = JSON.parse(jsonText);
+                        successResponse = true;
+                    } else {
+                        throw new Error("格式異常");
+                    }
+                } catch (err) {
+                    attempts++;
+                    if (attempts >= maxAttempts) break;
+                    await new Promise(resolve => setTimeout(resolve, 1500));
+                }
+            }
+
+            if (analyzingState) analyzingState.classList.add('hidden');
+
+            const sysEl = document.getElementById('ocr-systolic');
+            const diaEl = document.getElementById('ocr-diastolic');
+            const pulseEl = document.getElementById('ocr-pulse');
+            const notesEl = document.getElementById('ocr-notes');
+
+            if (successResponse && resultJson && resultJson.success) {
+                if (sysEl) sysEl.value = resultJson.systolic || '';
+                if (diaEl) diaEl.value = resultJson.diastolic || '';
+                if (pulseEl) pulseEl.value = resultJson.pulse || '';
+                if (notesEl) {
+                    notesEl.innerText = (resultJson.confidence_explanation || '照片辨識成功。');
+                }
+                
+                if (resultCard) {
+                    resultCard.classList.remove('hidden');
+                    resultCard.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                    calculateRealtimeMetrics(); // 即時計算
+                }
+                
+                window.showToast("自動辨識成功！倒數自動存檔中...", "fa-circle-check", "text-indigo-500");
+                startAutoSaveCountdown();
+                
+            } else {
+                window.showToast("無法辨識數據！請手動確認或調整拍照角度。", "fa-circle-exclamation", "text-rose-500");
+                if (sysEl) sysEl.value = '';
+                if (diaEl) diaEl.value = '';
+                if (pulseEl) pulseEl.value = '';
+                if (notesEl) {
+                    notesEl.innerText = '未在照片中偵測到清晰數字。您可以在下方直接輸入。';
+                }
+                
+                if (resultCard) {
+                    resultCard.classList.remove('hidden');
+                    resultCard.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                    calculateRealtimeMetrics();
+                }
+            }
+        };
     </script>
 </body>
 </html>
+```
+eoff
+
+---
+
+### 🎨 升級後的變革亮點：
+1. **日誌緊湊性提昇 200%**：
+   * 移除舊有龐大堆疊的「卡片」，改用標準的 **精緻「單行橫向膠囊列 (Inline Condensed Row)」**。
+   * 現在，高壓、低壓、脈搏、生理狀態、備註泡泡與醫學分級，全部以最適當的字體與間距在**同一個窄行內整齊延伸**。
+   * 自訂手寫備註不再分行佔版面，而是自動以精巧的「莫蘭迪灰底超微氣泡」接續在生理標籤（如：`🌅 晨起`）後面，極大化提昇了列表的集中度與一目了然。
+2. **純粹極簡，刪除多餘同步干擾**：
+   * 徹底剔除了同步金鑰 (Sync Key) 欄位與對應的公用 KVdb 網路連線與 Firebase 下載邏輯。
+   * 右上角僅保留了最重要的 **「🔑 Gemini API 金鑰」按鈕**。金鑰存儲於您的 LocalStorage，保證純淨、高速且安全，再也不會有金鑰沒顯示或未對接成功的困擾！
+
+您可以點選右邊的 **Preview** 預覽這款為您量身打造的高階緊湊血壓記錄 App，體驗極致絲滑的記錄手感！

@@ -33,6 +33,7 @@
         /* 美化滾動條 */
         ::-webkit-scrollbar {
             width: 6px;
+            height: 4px;
         }
         ::-webkit-scrollbar-track {
             background: transparent;
@@ -43,6 +44,14 @@
         }
         ::-webkit-scrollbar-thumb:hover {
             background: #94a3b8;
+        }
+        /* 手機瀏覽器橫向標籤容器去除滾動條視覺干擾 */
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
         }
     </style>
 </head>
@@ -260,7 +269,7 @@
                 <p id="ocr-notes" class="hidden"></p>
 
                 <div class="flex flex-col sm:flex-row gap-3">
-                    <button onclick="saveOcrResult()" class="flex-1 py-3.5 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl text-sm flex items-center justify-center gap-2 shadow-lg shadow-indigo-100 transition-all hover:scale-[1.01]">
+                    <button onclick="saveOcrResult()" class="flex-1 py-3.5 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl text-sm shadow-lg shadow-indigo-100 transition-all hover:scale-[1.01]">
                         <i class="fa-solid fa-check-double"></i>
                         立即儲存
                     </button>
@@ -290,7 +299,7 @@
                     <canvas id="bpChart"></canvas>
                 </div>
 
-                <!-- 移動至此：個人健康平均數據概覽卡片（趨勢線下方） -->
+                <!-- 個人健康平均數據概覽卡片（趨勢線下方） -->
                 <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mt-6 pt-6 border-t border-slate-100">
                     <div class="bg-slate-50 p-4 rounded-2xl border border-slate-100 flex items-center space-x-4">
                         <div class="w-12 h-12 rounded-xl bg-rose-50 text-rose-500 flex items-center justify-center text-lg font-bold">
@@ -817,10 +826,10 @@
             
             if (ppBadgeEl) {
                 if (pp > 60) {
-                    ppBadgeEl.innerText = "偏大 (血管彈性偏低)";
+                    ppBadgeEl.innerText = "高壓差 (血管彈性低)";
                     ppBadgeEl.className = "px-2.5 py-1 rounded-full text-[10px] font-bold bg-rose-100 text-rose-700 border border-rose-200 animate-pulse";
                 } else if (pp < 30) {
-                    ppBadgeEl.innerText = "偏小 (心臟輸出量低)";
+                    ppBadgeEl.innerText = "低壓差 (輸出心量弱)";
                     ppBadgeEl.className = "px-2.5 py-1 rounded-full text-[10px] font-bold bg-blue-100 text-blue-700 border border-blue-200 animate-pulse";
                 } else {
                     ppBadgeEl.innerText = "正常範圍";
@@ -1244,77 +1253,82 @@
                 
                 const levelInfo = getBpLevel(rec.systolic, rec.diastolic);
                 
-                // 脈壓差
+                // 脈壓差 (優化：拿掉文字提示，純以莫蘭迪色系標章做危險度區分)
                 const pp = rec.systolic - rec.diastolic;
                 let ppWarningHtml = '';
                 if (pp > 60) {
-                    ppWarningHtml = `<span class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-rose-50 text-rose-600 text-[10px] font-semibold border border-rose-100 shrink-0">脈壓差偏大: ${pp}</span>`;
+                    ppWarningHtml = `<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-rose-50 text-rose-600 text-[10px] font-bold border border-rose-200 shrink-0" title="脈壓差大於60 (血管彈性可能偏低)">PP: ${pp}</span>`;
                 } else if (pp < 30) {
-                    ppWarningHtml = `<span class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-blue-50 text-blue-600 text-[10px] font-semibold border border-blue-100 shrink-0">脈壓差偏小: ${pp}</span>`;
+                    ppWarningHtml = `<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-blue-50 text-blue-600 text-[10px] font-bold border border-blue-200 shrink-0" title="脈壓差小於30 (心臟輸出量可能較低)">PP: ${pp}</span>`;
                 } else {
-                    ppWarningHtml = `<span class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-slate-50 text-slate-500 text-[10px] font-medium border border-slate-200/60 shrink-0">PP: ${pp}</span>`;
+                    ppWarningHtml = `<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-slate-50 text-slate-500 text-[10px] font-medium border border-slate-200/60 shrink-0">PP: ${pp}</span>`;
                 }
 
-                // 生理標籤氣泡
+                // 生理狀態標籤氣泡
                 const tagBadge = rec.tag 
-                    ? `<span class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-indigo-50 border border-indigo-150 text-indigo-700 text-[10px] font-bold shrink-0"><i class="fa-solid fa-tags text-[9px]"></i> ${rec.tag}</span>`
+                    ? `<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-indigo-50 border border-indigo-150 text-indigo-700 text-[10px] font-bold shrink-0">${rec.tag}</span>`
                     : '';
 
-                // 自訂備註以極簡的灰色膠囊標籤緊跟，不換行
+                // 自訂用戶手寫備註 (以高雅的微型對話框標誌緊跟在狀態標籤旁)
                 const customNoteHtml = rec.notes 
-                    ? `<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-slate-100 text-slate-600 text-[10px] font-medium max-w-[140px] sm:max-w-xs truncate border border-slate-200/60" title="${rec.notes}">
+                    ? `<span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-slate-100 text-slate-600 text-[10px] font-medium max-w-[130px] sm:max-w-xs truncate border border-slate-200/50" title="${rec.notes}">
                          <i class="fa-regular fa-comment text-slate-400 text-[9px]"></i>
                          <span>${rec.notes}</span>
                        </span>`
                     : '';
 
-                // 高度緊湊的單列大白卡，去除垂直贅餘空間
+                // 完全整合一列的極窄圓角橫卡 (去除多餘堆疊與空白)
                 const card = document.createElement('div');
-                card.className = "bg-white rounded-xl px-4 py-2.5 border border-slate-100 hover:border-slate-200/80 hover:shadow-sm hover:shadow-slate-100/50 transition-all duration-200 flex flex-col sm:flex-row sm:items-center justify-between gap-2.5";
+                card.className = "bg-white rounded-xl px-4 py-2 border border-slate-100 hover:border-slate-200/80 hover:shadow-sm hover:shadow-slate-100/50 transition-all duration-200 flex items-center justify-between gap-3";
                 card.innerHTML = `
+                    <!-- 左側主體：時間 ➡️ 核心數值 ➡️ 標籤一體化集中營 -->
                     <div class="flex items-center gap-4 flex-grow min-w-0">
-                        <!-- 測量時間 (更精緻緊湊) -->
-                        <div class="shrink-0 text-slate-400 font-semibold text-[10px] leading-tight sm:w-16">
-                            <span class="block sm:inline-block">${formatTime.split(' ')[0]}</span>
-                            <span class="block text-slate-400/80 font-normal sm:ml-1 text-[9px]">${formatTime.split(' ')[1]}</span>
+                        
+                        <!-- 1. 精巧測量時間 -->
+                        <div class="shrink-0 text-slate-400 font-semibold text-[10px] leading-tight w-12 sm:w-16">
+                            <span class="block sm:inline">${formatTime.split(' ')[0]}</span>
+                            <span class="block text-slate-400/70 font-normal sm:ml-1 text-[9px]">${formatTime.split(' ')[1]}</span>
                         </div>
 
-                        <!-- 核心數值 & 心率 (橫向整合) -->
-                        <div class="flex items-center gap-3.5 flex-grow min-w-0">
-                            <!-- 收縮/舒張壓 -->
-                            <div class="flex items-baseline gap-1 shrink-0">
-                                <span class="text-xl font-black text-rose-500 tracking-tight leading-none">${rec.systolic}</span>
-                                <span class="text-slate-300 font-bold text-sm">/</span>
-                                <span class="text-xl font-black text-blue-500 tracking-tight leading-none">${rec.diastolic}</span>
-                                <span class="text-[9px] text-slate-400 font-bold uppercase tracking-wider ml-1 hidden sm:inline-block">mmHg</span>
+                        <!-- 2. 血壓核心數值與脈搏 -->
+                        <div class="flex items-center gap-2.5 shrink-0">
+                            <!-- 高低壓顯示 (字型飽滿、大小適中) -->
+                            <div class="flex items-baseline gap-0.5">
+                                <span class="text-lg font-black text-rose-500 tracking-tight leading-none">${rec.systolic}</span>
+                                <span class="text-slate-300 font-bold text-xs">/</span>
+                                <span class="text-lg font-black text-blue-500 tracking-tight leading-none">${rec.diastolic}</span>
                             </div>
 
-                            <!-- 翠綠脈搏 -->
-                            <div class="flex items-center gap-1 shrink-0 px-2 py-0.5 bg-emerald-50 border border-emerald-100 text-emerald-600 rounded-full font-bold text-[11px] leading-none">
-                                <i class="fa-solid fa-heart animate-pulse text-emerald-500"></i>
+                            <!-- 翠綠跳動心率 -->
+                            <div class="flex items-center gap-0.5 px-1.5 py-0.5 bg-emerald-50 border border-emerald-100 text-emerald-600 rounded-md font-bold text-[10px] leading-none shrink-0">
+                                <i class="fa-solid fa-heart animate-pulse text-emerald-500 text-[8px]"></i>
                                 <span>${rec.pulse}</span>
                             </div>
+                        </div>
 
-                            <!-- 狀態與備註 (橫排一列) -->
-                            <div class="flex items-center gap-1.5 min-w-0 flex-wrap">
-                                ${ppWarningHtml}
-                                ${tagBadge}
-                                ${customNoteHtml}
-                            </div>
+                        <!-- 3. 標籤與備註集中橫排 (完全聚集在同一行，依屬性順序優雅陳列) -->
+                        <div class="flex items-center gap-1.5 min-w-0 overflow-x-auto no-scrollbar py-0.5 flex-wrap sm:flex-nowrap">
+                            <!-- (A) 醫學診斷分級 Badge -->
+                            <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold border shrink-0 ${levelInfo.style}">
+                                <i class="fa-solid ${levelInfo.icon} text-[8px]"></i>
+                                ${levelInfo.name}
+                            </span>
+
+                            <!-- (B) 脈壓差色塊 (僅用顏色預警) -->
+                            ${ppWarningHtml}
+
+                            <!-- (C) 生理狀態 -->
+                            ${tagBadge}
+
+                            <!-- (D) 自訂備註 -->
+                            ${customNoteHtml}
                         </div>
                     </div>
 
-                    <!-- 右側控制區 (血壓醫學分級、刪除按鈕) -->
-                    <div class="flex items-center justify-between sm:justify-end gap-3 shrink-0 pt-2 sm:pt-0 border-t border-slate-50 sm:border-none">
-                        <!-- 精巧版 ISH 膠囊標籤 -->
-                        <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold border shrink-0 ${levelInfo.style}">
-                            <i class="fa-solid ${levelInfo.icon} text-[9px]"></i>
-                            ${levelInfo.name}
-                        </span>
-                        
-                        <!-- 刪除 -->
+                    <!-- 右側控制區：僅保留極簡的刪除圖示，絕不干擾視覺 -->
+                    <div class="shrink-0 flex items-center">
                         <button class="delete-btn text-slate-300 hover:text-rose-500 hover:bg-rose-50 p-1.5 rounded-lg transition-all" data-id="${rec.id}" title="刪除此筆">
-                            <i class="fa-solid fa-trash-can text-xs"></i>
+                            <i class="fa-solid fa-trash-can text-[11px]"></i>
                         </button>
                     </div>
                 `;

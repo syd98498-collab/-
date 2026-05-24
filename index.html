@@ -75,7 +75,7 @@
 
     <main class="flex-grow max-w-6xl w-full mx-auto px-4 py-6 flex flex-col gap-6">
         
-        <!-- 四大分頁導覽標籤 -->
+        <!-- 三大分頁導覽標籤 -->
         <div class="bg-white p-1 rounded-2xl shadow-sm border border-slate-200 flex space-x-1">
             <button onclick="switchTab('photo-tab')" id="btn-photo-tab" class="tab-btn flex-1 py-3 px-4 rounded-xl text-sm font-semibold flex items-center justify-center space-x-2 transition-all-300 bg-indigo-600 text-white shadow-sm">
                 <i class="fa-solid fa-camera text-base"></i>
@@ -273,37 +273,6 @@
                     </button>
                 </div>
             </div>
-
-            <!-- 個人今日健康平均概覽卡片 -->
-            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-150 flex items-center space-x-4">
-                    <div class="w-12 h-12 rounded-xl bg-rose-50 text-rose-500 flex items-center justify-center text-lg font-bold">
-                        <i class="fa-solid fa-arrow-trend-up"></i>
-                    </div>
-                    <div>
-                        <p class="text-xs text-slate-500 font-medium">最近收縮壓 (平均)</p>
-                        <p id="stat-avg-sys" class="text-lg font-bold text-slate-900 mt-0.5">-- <span class="text-xs text-slate-400 font-normal">mmHg</span></p>
-                    </div>
-                </div>
-                <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-150 flex items-center space-x-4">
-                    <div class="w-12 h-12 rounded-xl bg-blue-50 text-blue-500 flex items-center justify-center text-lg font-bold">
-                        <i class="fa-solid fa-arrow-trend-down"></i>
-                    </div>
-                    <div>
-                        <p class="text-xs text-slate-500 font-medium">最近舒張壓 (平均)</p>
-                        <p id="stat-avg-dia" class="text-lg font-bold text-slate-900 mt-0.5">-- <span class="text-xs text-slate-400 font-normal">mmHg</span></p>
-                    </div>
-                </div>
-                <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-150 flex items-center space-x-4">
-                    <div class="w-12 h-12 rounded-xl bg-emerald-50 text-emerald-500 flex items-center justify-center text-lg font-bold">
-                        <i class="fa-solid fa-heart animate-pulse"></i>
-                    </div>
-                    <div>
-                        <p class="text-xs text-slate-500 font-medium">平均心搏率</p>
-                        <p id="stat-avg-pulse" class="text-lg font-bold text-slate-900 mt-0.5">-- <span class="text-xs text-slate-400 font-normal">bpm</span></p>
-                    </div>
-                </div>
-            </div>
         </div>
 
         <!-- 歷史走勢與圖表分頁 -->
@@ -323,6 +292,37 @@
                 </div>
                 <div class="relative w-full h-[300px]">
                     <canvas id="bpChart"></canvas>
+                </div>
+
+                <!-- 移動至此：個人今日/最近健康平均數據概覽卡片（趨勢線下方） -->
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mt-6 pt-6 border-t border-slate-100">
+                    <div class="bg-slate-50 p-4 sm:p-5 rounded-2xl border border-slate-100 flex items-center space-x-4">
+                        <div class="w-12 h-12 rounded-xl bg-rose-50 text-rose-500 flex items-center justify-center text-lg font-bold">
+                            <i class="fa-solid fa-arrow-trend-up"></i>
+                        </div>
+                        <div>
+                            <p class="text-xs text-slate-500 font-medium">最近收縮壓 (平均)</p>
+                            <p id="stat-avg-sys" class="text-lg font-bold text-slate-900 mt-0.5">-- <span class="text-xs text-slate-400 font-normal">mmHg</span></p>
+                        </div>
+                    </div>
+                    <div class="bg-slate-50 p-4 sm:p-5 rounded-2xl border border-slate-100 flex items-center space-x-4">
+                        <div class="w-12 h-12 rounded-xl bg-blue-50 text-blue-500 flex items-center justify-center text-lg font-bold">
+                            <i class="fa-solid fa-arrow-trend-down"></i>
+                        </div>
+                        <div>
+                            <p class="text-xs text-slate-500 font-medium">最近舒張壓 (平均)</p>
+                            <p id="stat-avg-dia" class="text-lg font-bold text-slate-900 mt-0.5">-- <span class="text-xs text-slate-400 font-normal">mmHg</span></p>
+                        </div>
+                    </div>
+                    <div class="bg-slate-50 p-4 sm:p-5 rounded-2xl border border-slate-100 flex items-center space-x-4">
+                        <div class="w-12 h-12 rounded-xl bg-emerald-50 text-emerald-500 flex items-center justify-center text-lg font-bold">
+                            <i class="fa-solid fa-heart animate-pulse"></i>
+                        </div>
+                        <div>
+                            <p class="text-xs text-slate-500 font-medium">平均心搏率</p>
+                            <p id="stat-avg-pulse" class="text-lg font-bold text-slate-900 mt-0.5">-- <span class="text-xs text-slate-400 font-normal">bpm</span></p>
+                        </div>
+                    </div>
                 </div>
             </div>
 
@@ -632,10 +632,8 @@
                 manualTimeInput.value = now.toISOString().slice(0, 16);
             }
             
-            const syncStatusEl = document.getElementById('sync-status');
-            if (syncStatusEl) {
-                syncStatusEl.innerText = "📴 離線本機模式";
-            }
+            // 智感同步服務初始化
+            initSyncService();
         });
 
         // 儲存金鑰
@@ -791,7 +789,7 @@
 
                 if (countdownSeconds <= 0) {
                     clearInterval(autoSaveInterval);
-                    saveOcrResult(); // 自動觸存檔
+                    saveOcrResult(); // 自動儲存
                 }
             }, 100);
         }
@@ -806,10 +804,8 @@
 
             if (progressBar) progressBar.style.width = '100%';
             if (statusText) statusText.innerHTML = `<i class="fa-solid fa-pause text-amber-500"></i> <span class="text-slate-500">已暫停自動儲存</span>`;
-            if (pauseBtn) pauseBtn.innerHTML = `<i class="fa-solid fa-play"></i> 繼續`;
-            
-            // 切換按鈕行為為點擊後重啟倒數
             if (pauseBtn) {
+                pauseBtn.innerHTML = `<i class="fa-solid fa-play"></i> 繼續`;
                 pauseBtn.setAttribute('onclick', 'resumeCountdown()');
             }
         }
@@ -1098,7 +1094,7 @@
                 systolic: sys,
                 diastolic: dia,
                 pulse: pul,
-                tag: currentSelectedTag, // 高質感物理狀態標籤
+                tag: currentSelectedTag, // 高質感狀態標籤
                 notes: customNote, 
                 level: levelInfo.name
             };
@@ -1307,7 +1303,7 @@
                     ppWarningHtml = `<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-slate-50 text-slate-500 text-[10px] font-medium border border-slate-200/60">脈壓差: ${pp}</span>`;
                 }
 
-                // 生理標籤 Pilling
+                // 生理狀態氣泡
                 const tagBadge = rec.tag 
                     ? `<span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-indigo-50 border border-indigo-150 text-indigo-700 text-[10px] font-bold"><i class="fa-solid fa-tags text-[9px]"></i> ${rec.tag}</span>`
                     : '';
@@ -1333,14 +1329,14 @@
                                 <span class="text-[10px] text-slate-400 font-bold uppercase tracking-wider ml-1">mmHg</span>
                             </div>
                             
-                            <!-- 測量時間、脈壓差警報與生理標籤 -->
+                            <!-- 測量時間、脈壓差與生理標籤 -->
                             <div class="flex items-center gap-2 mt-1.5 flex-wrap">
                                 <span class="text-xs text-slate-400 font-semibold">${formatTime}</span>
                                 ${ppWarningHtml}
                                 ${tagBadge}
                             </div>
                             
-                            <!-- 實用備註（若有填寫） -->
+                            <!-- 自訂備註 -->
                             ${customNoteBubble}
                         </div>
                     </div>
@@ -1484,7 +1480,142 @@
             });
         }
 
-        // ==================== 同步面板控制 ====================
+        // ==================== 智感雙軌雲端同步與金鑰服務 ====================
+        function initSyncService() {
+            let syncKey = localStorage.getItem('bp_custom_sync_uid');
+            if (!syncKey) {
+                // 自動生成一組好記的 10 碼隨機大寫同步金鑰
+                syncKey = 'BP-' + Math.random().toString(36).substr(2, 4).toUpperCase() + '-' + Math.random().toString(36).substr(2, 4).toUpperCase();
+                localStorage.setItem('bp_custom_sync_uid', syncKey);
+            }
+            
+            const syncInput = document.getElementById('device-sync-key');
+            if (syncInput) {
+                syncInput.value = syncKey;
+            }
+            
+            window.currentUserId = syncKey;
+            
+            // 如果 Firebase 尚未初始化（如部署在普通 GitHub Pages 靜態伺服器上），自動啟用 Fallback 公用雲端
+            if (!window.isCloudConnected) {
+                startFallbackSync(syncKey);
+            }
+        }
+
+        let fallbackSyncInterval = null;
+        let lastSyncJson = '';
+
+        async function startFallbackSync(syncKey) {
+            clearInterval(fallbackSyncInterval);
+            
+            const syncStatusEl = document.getElementById('sync-status');
+            if (syncStatusEl) {
+                syncStatusEl.innerHTML = `<span class="w-2 h-2 bg-indigo-500 rounded-full mr-1 inline-block animate-pulse"></span> 雲端載入中...`;
+            }
+
+            // 初次雙向合併與下載
+            await fetchFallbackCloudData(syncKey);
+
+            // 每 8 秒雙向同步檢測，達到秒級跨裝置自動同步
+            fallbackSyncInterval = setInterval(() => {
+                fetchFallbackCloudData(syncKey, true);
+            }, 8000);
+
+            // 重寫操作介面，直接對接 Fallback 雲端 API
+            window.cloudSaveHandler = async (newRecord) => {
+                window.db.unshift(newRecord);
+                localStorage.setItem('bp_logs', JSON.stringify(window.db));
+                await pushFallbackCloudData(syncKey);
+                updateStats();
+                renderHistoryList();
+                if (window.chartInstance) window.chartInstance.destroy();
+                initChart();
+                showToast("雲端與本地已同步存檔！", "fa-circle-check", "text-emerald-500");
+            };
+
+            window.cloudDeleteHandler = async (id) => {
+                window.db = window.db.filter(rec => rec.id !== id);
+                localStorage.setItem('bp_logs', JSON.stringify(window.db));
+                await pushFallbackCloudData(syncKey);
+                updateStats();
+                renderHistoryList();
+                if (window.chartInstance) window.chartInstance.destroy();
+                initChart();
+                showToast("已從雲端與本地同步刪除", "fa-trash-can", "text-rose-500");
+            };
+
+            window.cloudClearHandler = async () => {
+                window.db = [];
+                localStorage.setItem('bp_logs', JSON.stringify(window.db));
+                await pushFallbackCloudData(syncKey);
+                updateStats();
+                renderHistoryList();
+                if (window.chartInstance) window.chartInstance.destroy();
+                initChart();
+                showToast("歷史紀錄已全數從雲端清空", "fa-dumpster", "text-rose-500");
+            };
+        }
+
+        async function fetchFallbackCloudData(syncKey, isPolling = false) {
+            try {
+                const res = await fetch(`https://kvdb.io/bp_cam_v1_sync/${syncKey}`);
+                if (res.status === 200) {
+                    const cloudDb = await res.json();
+                    const cloudJson = JSON.stringify(cloudDb);
+                    
+                    if (cloudJson !== lastSyncJson) {
+                        lastSyncJson = cloudJson;
+                        window.db = cloudDb;
+                        localStorage.setItem('bp_logs', cloudJson);
+                        
+                        // 刷新 UI
+                        updateStats();
+                        renderHistoryList();
+                        if (window.chartInstance) window.chartInstance.destroy();
+                        initChart();
+                        
+                        if (isPolling) {
+                            showToast("偵測到跨裝置更新，已自動秒級同步！", "fa-arrows-rotate", "text-indigo-500");
+                        }
+                    }
+                    
+                    const syncStatusEl = document.getElementById('sync-status');
+                    if (syncStatusEl) {
+                        syncStatusEl.innerHTML = `<span class="w-2 h-2 bg-emerald-500 rounded-full mr-1 inline-block"></span> 實時雲端已備份`;
+                    }
+                } else if (res.status === 404) {
+                    // 雲端尚無此金鑰紀錄，進行初次備份上傳
+                    await pushFallbackCloudData(syncKey);
+                }
+            } catch (err) {
+                console.warn("雲端拉取異常，自動改以本地快取模式運作:", err);
+                const syncStatusEl = document.getElementById('sync-status');
+                if (syncStatusEl) {
+                    syncStatusEl.innerHTML = `<span class="w-2 h-2 bg-amber-500 rounded-full mr-1 inline-block"></span> 離線本地模式`;
+                }
+            }
+        }
+
+        async function pushFallbackCloudData(syncKey) {
+            try {
+                const cloudJson = JSON.stringify(window.db);
+                lastSyncJson = cloudJson;
+                
+                await fetch(`https://kvdb.io/bp_cam_v1_sync/${syncKey}`, {
+                    method: 'POST',
+                    body: cloudJson,
+                    headers: { 'Content-Type': 'application/json' }
+                });
+                
+                const syncStatusEl = document.getElementById('sync-status');
+                if (syncStatusEl) {
+                    syncStatusEl.innerHTML = `<span class="w-2 h-2 bg-emerald-500 rounded-full mr-1 inline-block"></span> 實時雲端已備份`;
+                }
+            } catch (err) {
+                console.error("雲端備份上傳失敗:", err);
+            }
+        }
+
         function openSyncModal() {
             const modal = document.getElementById('sync-modal');
             if (modal) modal.classList.remove('hidden');
@@ -1498,12 +1629,12 @@
         function copySyncKey() {
             const keyInput = document.getElementById('device-sync-key');
             if (!keyInput || !keyInput.value) {
-                showToast("雲端未初始化！請託管至 GitHub Pages HTTPS 環境開啟功能！", "fa-triangle-exclamation", "text-amber-500");
+                showToast("同步金鑰未生成！", "fa-triangle-exclamation", "text-amber-500");
                 return;
             }
             keyInput.select();
             document.execCommand('copy');
-            showToast("同步金鑰已成功複製！", "fa-circle-check", "text-emerald-400");
+            showToast("金鑰已成功複製！", "fa-circle-check", "text-emerald-400");
         }
 
         function triggerConnectDevice() {
@@ -1511,25 +1642,34 @@
             if (!targetInput) return;
             const targetKey = targetInput.value.trim();
             if (!targetKey) {
-                showToast("請輸入對應同步金鑰！", "fa-triangle-exclamation", "text-amber-500");
+                showToast("請貼上對應金鑰！", "fa-triangle-exclamation", "text-amber-500");
                 return;
             }
 
             showCustomConfirm(
                 "是否確定對接此同步金鑰？", 
-                "對接後，目前本機數據可能會被該金鑰對應的雲端資料庫覆蓋。", 
+                "對接後，本機數據將會被該金鑰對應的雲端資料庫覆蓋，兩裝置資料將無縫互通。", 
                 false, 
                 () => {
                     localStorage.setItem('bp_custom_sync_uid', targetKey);
                     window.currentUserId = targetKey;
+                    
+                    const syncInput = document.getElementById('device-sync-key');
+                    if (syncInput) syncInput.value = targetKey;
+                    
                     closeSyncModal();
-                    const statusEl = document.getElementById('sync-status');
-                    if (statusEl) {
-                        statusEl.innerHTML = `<span class="w-2 h-2 bg-indigo-500 rounded-full mr-1 animate-pulse inline-block"></span> 連線中...`;
+                    
+                    const syncStatusEl = document.getElementById('sync-status');
+                    if (syncStatusEl) {
+                        syncStatusEl.innerHTML = `<span class="w-2 h-2 bg-indigo-500 rounded-full mr-1 animate-pulse inline-block"></span> 連線中...`;
                     }
-                    if (window.reconnectCloudService) {
+                    
+                    if (window.isCloudConnected && window.reconnectCloudService) {
                         window.reconnectCloudService();
+                    } else {
+                        startFallbackSync(targetKey);
                     }
+                    showToast("金鑰對接成功，實時雲端已建立！", "fa-link", "text-emerald-500");
                 }
             );
         }
@@ -1554,7 +1694,7 @@
         }
     </script>
 
-    <!-- Firebase 實時同步與 AI 辨識模組 -->
+    <!-- Firebase 實時備份（僅在特定自定義環境下載入，普通託管將無縫使用 KVdb Fallback） -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
@@ -1565,10 +1705,7 @@
             const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : {
                 apiKey: "",
                 authDomain: "default-bp-app.firebaseapp.com",
-                projectId: "default-bp-app",
-                storageBucket: "default-bp-app.appspot.com",
-                messagingSenderId: "12345678",
-                appId: "1:12345:web:12345"
+                projectId: "default-bp-app"
             };
 
             try {
@@ -1613,7 +1750,6 @@
                         const activeUid = window.currentUserId || nativeUid;
                         const bpCollectionRef = collection(firestoreDb, 'artifacts', appId, 'users', activeUid, 'bp_logs');
 
-                        // 遷移本機數據上傳
                         const localRaw = localStorage.getItem('bp_logs');
                         if (localRaw) {
                             try {
